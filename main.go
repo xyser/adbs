@@ -7,6 +7,13 @@ import (
 )
 
 func main() {
+	var bo bool
+	var err error
+	if bo, err = shell.Connect("192.168.11.29"); err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("Connect: %s\n", bo)
+
 	// 设备列表
 	devices, err := shell.Lists()
 	if err != nil {
@@ -23,7 +30,6 @@ func main() {
 	fmt.Println(pack)
 
 	// 清理软件包缓存
-	var bo bool
 	if bo, err = packages.Clear("com.dingdayu.helloandriod"); err != nil {
 		fmt.Println(err)
 	}
