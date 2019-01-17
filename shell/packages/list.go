@@ -9,8 +9,8 @@ import (
 )
 
 type Package struct {
-	ApplicationId string
-	ApkPath       string
+	ApplicationId string `json:"application_id"`
+	ApkPath       string `json:"apk_path"`
 }
 
 func List() (packages []Package, err error) {

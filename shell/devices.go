@@ -10,8 +10,8 @@ import (
 )
 
 type Device struct {
-	No    string
-	State string
+	No    string `json:"no"`
+	State string `json:"state"`
 }
 
 // 连接一个IP的设备
@@ -31,7 +31,7 @@ func Connect(ip string) (bool, error) {
 	if strings.Contains(res, "failed to connect") {
 		return false, errors.New(res)
 	}
-	if strings.Contains(res, "already connected to") {
+	if strings.Contains(res, "already connected to") || strings.Contains(res, "connected to") {
 		return true, nil
 	}
 	return false, errors.New(out.String())
