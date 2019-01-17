@@ -24,5 +24,10 @@ func Init() *gin.Engine {
 		api.GET("/packages", handlers.GetPackages)
 	}
 
+	// 处理websocket
+	r.GET("/ws", func(c *gin.Context) {
+		handlers.WsHandler(c.Writer, c.Request)
+	})
+
 	return r
 }
