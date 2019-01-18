@@ -1,9 +1,15 @@
 package main
 
-import "adbs/api"
+import (
+	"bytes"
+	"fmt"
+	"os/exec"
+	"strings"
+	"time"
+)
 
 func main() {
-	api.Init()
+	//api.Init()
 
 	//// adb version
 	//version, err := shell.Version()
@@ -39,4 +45,36 @@ func main() {
 	//}
 	//
 	//fmt.Println("Execute finished:" + string(out_bytes))
+
+	cmd := exec.Command("adb", "shell")
+	var pipIn, pipOut bytes.Buffer
+	cmd.Stdin = &pipIn
+	cmd.Stdout = &pipOut
+
+	if err := cmd.Start(); err != nil {
+		panic(err)
+	}
+
+	//result printer
+	go func() {
+		for {
+			line, _ := pipOut.ReadString('\n')
+			if line != "" {
+				fmt.Println(line)
+			}
+		}
+	}()
+
+	go cmd.Wait()
+	pipIn.WriteString(fmt.Sprintf("%s\n", "ls"))
+
+	time.Sleep(time.Millisecond * 5000)
+	fmt.Println(strings.Replace(pipOut.String(), "\n", "", 1))
+
+	var input string
+	fmt.Scanln(&input)
+
+	time.Sleep(time.Millisecond * 1000)
+	pipIn.WriteString(fmt.Sprintf("%s\n", "cd /"))
+	fmt.Println(strings.Replace(pipOut.String(), "\n", "", 1))
 }

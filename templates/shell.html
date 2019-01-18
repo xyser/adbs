@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+    <link rel="stylesheet" href="/static/xterm/dist/xterm.css" />
+    <script src="/static/xterm/dist/xterm.js"></script>
+    <script src="/static/xterm/dist/addons/attach/attach.js"></script>
+</head>
+<body>
+<div id="terminal"></div>
+<script>
+    Terminal.applyAddon(attach);
+    let term = new Terminal({cursorBlink: true});
+
+
+    let socket = new WebSocket('ws://127.0.0.1:8081/ws');
+    socket.addEventListener('open', function () {
+        term.attach(socket);
+    });
+
+    socket.onclose = function () {
+        term.writeln("closed. Thank you for use!");
+    };
+
+    term.open(document.getElementById('#terminal'));
+    term.writeln("welcome to use docker web terminal!");
+</script>
+</body>
+</html>

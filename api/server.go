@@ -15,7 +15,7 @@ func Init() {
 	r := router.Init()
 
 	s := &http.Server{
-		Addr:           fmt.Sprintf(":%d", 8080),
+		Addr:           fmt.Sprintf(":%d", 8081),
 		Handler:        r,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,

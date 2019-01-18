@@ -3,6 +3,7 @@ package router
 import (
 	"adbs/api/handlers"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 func Init() *gin.Engine {
@@ -28,6 +29,16 @@ func Init() *gin.Engine {
 	r.GET("/ws", func(c *gin.Context) {
 		handlers.WsHandler(c.Writer, c.Request)
 	})
+
+	//r.LoadHTMLGlob("templates/*")
+	r.LoadHTMLFiles("templates/shell.html")
+	r.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "shell.html", gin.H{
+			"title": "Main website",
+		})
+	})
+
+	r.Static("/static", "static")
 
 	return r
 }

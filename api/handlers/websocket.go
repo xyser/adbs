@@ -24,30 +24,41 @@ var wsUpgrade = websocket.Upgrader{
 
 // 处理ws请求
 func WsHandler(w http.ResponseWriter, r *http.Request) {
-	var conn *websocket.Conn
-	var err error
-	conn, err = wsUpgrade.Upgrade(w, r, nil)
+	conn, err := wsUpgrade.Upgrade(w, r, nil)
 	if err != nil {
 		fmt.Println("Failed to set websocket upgrade: %+v", err)
 		return
 	}
+	defer conn.Close()
 
 	in := make(chan []byte)
 	out := make(chan []byte)
 
-	if err := shell.Shell(in, out); err != nil {
-		fmt.Println("Failed to set websocket upgrade: %+v", err)
-		return
-	}
+	go func() {
+		for {
+			msg := <-out
+			err = conn.WriteMessage(1, msg)
+			if err != nil {
+				fmt.Println(err)
+				break
+			}
+		}
+	}()
+
+	go shell.Shell(in, out)
 
 	// 必须死循环，gin通过协程调用该handler函数，一旦退出函数，ws会被主动销毁
 	for {
-		var msg SockerBuff
-		if err := conn.ReadJSON(&msg); err != nil {
-			in <- []byte(msg.Cmd)
+		_, p, err := conn.ReadMessage()
+		if err != nil {
+			break
 		}
-		if err := conn.WriteMessage(1, <-out); err != nil {
-			fmt.Println("Failed to set websocket upgrade: %+v", err)
-		}
+		in <- p
+
+		//if err := conn.WriteMessage(1, <-out); err != nil {
+		//	fmt.Println(out)
+		//	fmt.Println("Failed to set websocket upgrade: %+v", err)
+		//	break
+		//}
 	}
 }
