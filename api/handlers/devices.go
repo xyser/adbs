@@ -4,7 +4,9 @@ import (
 	"adbs/shell"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
+	"strconv"
 )
 
 // 获取多个项目
@@ -60,4 +62,18 @@ func DisconnectDevice(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": message,
 	})
+}
+
+func ScreenCap(c *gin.Context) {
+	buffer, err := shell.Screencap()
+	if err == nil {
+		c.Writer.Header().Set("Content-Type", "image/png")
+		c.Writer.Header().Set("Content-Length", strconv.Itoa(len(buffer)))
+		if _, err := c.Writer.Write(buffer); err != nil {
+			log.Println("unable to write image.")
+		}
+	} else {
+		c.String(http.StatusOK, err.Error())
+	}
+
 }

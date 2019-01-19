@@ -2,6 +2,7 @@ package router
 
 import (
 	"adbs/api/handlers"
+	"github.com/gin-gonic/contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -11,18 +12,22 @@ func Init() *gin.Engine {
 
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
+	r.Use(gzip.Gzip(gzip.DefaultCompression))
 	gin.SetMode("debug")
 
 	api := r.Group("/api")
 	{
-		//获取设备列表
+		// 获取设备列表
 		api.GET("/devices", handlers.GetDevices)
 		// 连接设备
 		api.POST("/devices/connect", handlers.ConnectDevice)
 		// 断开设备
 		api.POST("/devices/disconnect", handlers.DisconnectDevice)
 
+		// 获取包列表
 		api.GET("/packages", handlers.GetPackages)
+
+		api.GET("/screencap", handlers.ScreenCap)
 	}
 
 	// 处理websocket
