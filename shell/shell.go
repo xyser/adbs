@@ -2,6 +2,7 @@ package shell
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/websocket"
 	"github.com/kr/pty"
 	"io"
@@ -42,8 +43,13 @@ func Shell(conn *websocket.Conn) {
 			buf := make([]byte, 1024)
 			read, err := tty.Read(buf)
 			if err != nil {
-				conn.WriteMessage(websocket.TextMessage, []byte(err.Error()))
-				log.Println("Error: Unable to read from pty/cmd")
+				if err == io.EOF {
+					conn.WriteMessage(websocket.TextMessage, []byte("Warn: ADB 断开连接"))
+					fmt.Println("Warn: ADB 断开连接")
+				} else {
+					conn.WriteMessage(websocket.TextMessage, []byte(err.Error()))
+					log.Println("Error: Unable to read from pty/cmd")
+				}
 				return
 			}
 			conn.WriteMessage(websocket.BinaryMessage, buf[:read])
@@ -80,18 +86,17 @@ func Shell(conn *websocket.Conn) {
 		case 0:
 			copied, err := io.Copy(tty, reader)
 			if err != nil {
-				log.Printf("Error: Error after copying %d bytes", copied)
+				log.Printf("Error: Error after copying %d bytes\n", copied)
 			}
 		case 1:
 			decoder := json.NewDecoder(reader)
 			resizeMessage := windowSize{}
 			err := decoder.Decode(&resizeMessage)
 			if err != nil {
-				conn.WriteMessage(websocket.TextMessage, []byte("Error decoding resize message: "+err.Error()))
+				conn.WriteMessage(websocket.TextMessage, []byte("Error: 解析窗口信息失败: "+err.Error()))
 				continue
 			}
-			//log.WithField("resizeMessage", resizeMessage).Info("Resizing terminal")
-			log.Println("Info: Resizing terminal")
+			log.Printf("Info: Resizing terminal [%v]\n", resizeMessage)
 			_, _, errno := syscall.Syscall(
 				syscall.SYS_IOCTL,
 				tty.Fd(),
@@ -99,11 +104,10 @@ func Shell(conn *websocket.Conn) {
 				uintptr(unsafe.Pointer(&resizeMessage)),
 			)
 			if errno != 0 {
-				//l.WithError(syscall.Errno(errno)).Error("Unable to resize terminal")
-				log.Println("Error: Unable to resize terminal")
+				log.Printf("Error: 未能成功重置窗口大小[%s]\n", errno.Error())
 			}
 		default:
-			log.Printf("Error: Unknown data type[%s]", dataTypeBuf[0])
+			log.Printf("Error: Unknown data type[%d]\n", dataTypeBuf[0])
 		}
 	}
 }
