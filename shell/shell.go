@@ -28,14 +28,14 @@ func Shell(conn *websocket.Conn) {
 	tty, err := pty.Start(cmd)
 	if err != nil {
 		log.Println("Unable to start pty/cmd")
-		conn.WriteMessage(websocket.TextMessage, []byte(err.Error()))
+		_ = conn.WriteMessage(websocket.TextMessage, []byte(err.Error()))
 		return
 	}
 	defer func() {
-		cmd.Process.Kill()
-		cmd.Process.Wait()
-		tty.Close()
-		conn.Close()
+		_ = cmd.Process.Kill()
+		_, _ = cmd.Process.Wait()
+		_ = tty.Close()
+		_ = conn.Close()
 	}()
 
 	go func() {
@@ -44,15 +44,15 @@ func Shell(conn *websocket.Conn) {
 			read, err := tty.Read(buf)
 			if err != nil {
 				if err == io.EOF {
-					conn.WriteMessage(websocket.TextMessage, []byte("Warn: ADB 断开连接"))
+					_ = conn.WriteMessage(websocket.TextMessage, []byte("Warn: ADB 断开连接"))
 					fmt.Println("Warn: ADB 断开连接")
 				} else {
-					conn.WriteMessage(websocket.TextMessage, []byte(err.Error()))
+					_ = conn.WriteMessage(websocket.TextMessage, []byte(err.Error()))
 					log.Println("Error: Unable to read from pty/cmd")
 				}
 				return
 			}
-			conn.WriteMessage(websocket.BinaryMessage, buf[:read])
+			_ = conn.WriteMessage(websocket.BinaryMessage, buf[:read])
 		}
 	}()
 
@@ -65,7 +65,7 @@ func Shell(conn *websocket.Conn) {
 
 		if messageType == websocket.TextMessage {
 			log.Println("Warn: Unexpected text message")
-			conn.WriteMessage(websocket.TextMessage, []byte("Unexpected text message"))
+			_ = conn.WriteMessage(websocket.TextMessage, []byte("Unexpected text message"))
 			continue
 		}
 
@@ -73,7 +73,7 @@ func Shell(conn *websocket.Conn) {
 		read, err := reader.Read(dataTypeBuf)
 		if err != nil {
 			log.Println("Error: Unable to read message type from reader")
-			conn.WriteMessage(websocket.TextMessage, []byte("Unable to read message type from reader"))
+			_ = conn.WriteMessage(websocket.TextMessage, []byte("Unable to read message type from reader"))
 			return
 		}
 
@@ -93,7 +93,7 @@ func Shell(conn *websocket.Conn) {
 			resizeMessage := windowSize{}
 			err := decoder.Decode(&resizeMessage)
 			if err != nil {
-				conn.WriteMessage(websocket.TextMessage, []byte("Error: 解析窗口信息失败: "+err.Error()))
+				_ = conn.WriteMessage(websocket.TextMessage, []byte("Error: 解析窗口信息失败: "+err.Error()))
 				continue
 			}
 			log.Printf("Info: Resizing terminal [%v]\n", resizeMessage)
