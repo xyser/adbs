@@ -30,35 +30,6 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer conn.Close()
-
-	in := make(chan []byte)
-	out := make(chan []byte)
-
-	go func() {
-		for {
-			msg := <-out
-			err = conn.WriteMessage(1, msg)
-			if err != nil {
-				fmt.Println(err)
-				break
-			}
-		}
-	}()
-
-	go shell.Shell(in, out)
-
-	// 必须死循环，gin通过协程调用该handler函数，一旦退出函数，ws会被主动销毁
-	for {
-		_, p, err := conn.ReadMessage()
-		if err != nil {
-			break
-		}
-		in <- p
-
-		//if err := conn.WriteMessage(1, <-out); err != nil {
-		//	fmt.Println(out)
-		//	fmt.Println("Failed to set websocket upgrade: %+v", err)
-		//	break
-		//}
-	}
+	// 剩下的SHELL处理
+	shell.Shell(conn)
 }

@@ -26,7 +26,7 @@ func Init() *gin.Engine {
 	}
 
 	// 处理websocket
-	r.GET("/ws", func(c *gin.Context) {
+	r.GET("/ws/shell", func(c *gin.Context) {
 		handlers.WsHandler(c.Writer, c.Request)
 	})
 

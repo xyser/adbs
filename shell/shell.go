@@ -1,41 +1,109 @@
 package shell
 
 import (
-	"bufio"
-	"fmt"
+	"encoding/json"
+	"github.com/gorilla/websocket"
+	"github.com/kr/pty"
+	"io"
+	"log"
+	"os"
 	"os/exec"
+	"syscall"
+	"unsafe"
 )
 
-func Shell(inC chan []byte, outC chan []byte) {
+type windowSize struct {
+	Rows uint16 `json:"rows"`
+	Cols uint16 `json:"cols"`
+	X    uint16
+	Y    uint16
+}
+
+func Shell(conn *websocket.Conn) {
 	//函数返回一个*Cmd，用于使用给出的参数执行name指定的程序
 	cmd := exec.Command("adb", "shell")
+	cmd.Env = append(os.Environ(), "TERM=xterm")
 
-	//读取io.Writer类型的cmd.Stdout，再通过bytes.Buffer(缓冲byte类型的缓冲器)将byte类型转化为string类型(out.String():这是bytes类型提供的接口)
-	//var out,in bytes.Buffer
-
-	//cmd.Stdout = &out
-	//cmd.Stdin = &in
-
-	w, _ := cmd.StdinPipe()
-	r, _ := cmd.StdoutPipe()
+	tty, err := pty.Start(cmd)
+	if err != nil {
+		log.Println("Unable to start pty/cmd")
+		conn.WriteMessage(websocket.TextMessage, []byte(err.Error()))
+		return
+	}
+	defer func() {
+		cmd.Process.Kill()
+		cmd.Process.Wait()
+		tty.Close()
+		conn.Close()
+	}()
 
 	go func() {
-		s := bufio.NewScanner(r)
-		for s.Scan() {
-			fmt.Println(s.Text())
+		for {
+			buf := make([]byte, 1024)
+			read, err := tty.Read(buf)
+			if err != nil {
+				conn.WriteMessage(websocket.TextMessage, []byte(err.Error()))
+				log.Println("Error: Unable to read from pty/cmd")
+				return
+			}
+			conn.WriteMessage(websocket.BinaryMessage, buf[:read])
 		}
 	}()
 
-	if err := cmd.Start(); err != nil {
-		panic(err)
-	}
-
 	for {
-		msg := <-inC
-		fmt.Println("->" + string(msg))
-		if _, err := w.Write(msg); err != nil {
-			fmt.Println(err)
+		messageType, reader, err := conn.NextReader()
+		if err != nil {
+			log.Println("Error: Unable to grab next reader")
+			return
+		}
+
+		if messageType == websocket.TextMessage {
+			log.Println("Warn: Unexpected text message")
+			conn.WriteMessage(websocket.TextMessage, []byte("Unexpected text message"))
+			continue
+		}
+
+		dataTypeBuf := make([]byte, 1)
+		read, err := reader.Read(dataTypeBuf)
+		if err != nil {
+			log.Println("Error: Unable to read message type from reader")
+			conn.WriteMessage(websocket.TextMessage, []byte("Unable to read message type from reader"))
+			return
+		}
+
+		if read != 1 {
+			log.Println("Error: Unexpected number of bytes read")
+			return
+		}
+
+		switch dataTypeBuf[0] {
+		case 0:
+			copied, err := io.Copy(tty, reader)
+			if err != nil {
+				log.Printf("Error: Error after copying %d bytes", copied)
+			}
+		case 1:
+			decoder := json.NewDecoder(reader)
+			resizeMessage := windowSize{}
+			err := decoder.Decode(&resizeMessage)
+			if err != nil {
+				conn.WriteMessage(websocket.TextMessage, []byte("Error decoding resize message: "+err.Error()))
+				continue
+			}
+			//log.WithField("resizeMessage", resizeMessage).Info("Resizing terminal")
+			log.Println("Info: Resizing terminal")
+			_, _, errno := syscall.Syscall(
+				syscall.SYS_IOCTL,
+				tty.Fd(),
+				syscall.TIOCSWINSZ,
+				uintptr(unsafe.Pointer(&resizeMessage)),
+			)
+			if errno != 0 {
+				//l.WithError(syscall.Errno(errno)).Error("Unable to resize terminal")
+				log.Println("Error: Unable to resize terminal")
+			}
+		default:
+			log.Printf("Error: Unknown data type[%s]", dataTypeBuf[0])
 		}
 	}
-	go cmd.Wait()
 }
