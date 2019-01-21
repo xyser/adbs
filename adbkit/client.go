@@ -3,6 +3,7 @@ package adbkit
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"strings"
 	"time"
@@ -36,9 +37,9 @@ func (c Client) Command(command string) (response []byte, err error) {
 	}
 
 	time.Sleep(1 * time.Millisecond)
-	buf := make([]byte, 1024)
-	n, err := conn.Read(buf)
-	if n <= 0 || err != nil {
+
+	buf, err := ioutil.ReadAll(conn)
+	if len(buf) <= 0 || err != nil {
 		return nil, errors.New("socket read error: " + err.Error())
 	}
 	return buf, nil
