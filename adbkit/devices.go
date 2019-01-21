@@ -16,8 +16,12 @@ type Device struct {
 }
 
 // 获取设备列表
-func (c Client) Devices() ([]Device, error) {
-	resp, err := c.Command("host:devices")
+func (c Client) Devices(state bool) ([]Device, error) {
+	command := "host:devices"
+	if state {
+		command = "host:devices-l"
+	}
+	resp, err := c.Command(command)
 	if err != nil {
 		return nil, err
 	}
