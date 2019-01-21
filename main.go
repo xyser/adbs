@@ -1,9 +1,17 @@
 package main
 
-import "adbs/api"
+import (
+	"adbs/adbkit"
+	"fmt"
+)
 
 func main() {
-	api.Init()
+	//api.Init()
+
+	//response, _ := adbkit.New("127.0.0.1", 5037).Command("host:devices")
+	//fmt.Println(string(response))
+
+	fmt.Println(adbkit.New("127.0.0.1", 5037).Devices())
 
 	//// adb version
 	//version, err := shell.Version()
