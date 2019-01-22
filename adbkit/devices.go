@@ -124,3 +124,17 @@ func (c Client) Disconnect(ip string, port int) (bool, error) {
 	}
 	return false, errors.New("error response: " + string(resp))
 }
+
+// 获取设备列表
+func (c Client) Kill() (bool, error) {
+	resp, err := c.Command("host:kill")
+	if err != nil {
+		return false, err
+	}
+	if string(resp[0:4]) == OKAY {
+		return true, nil
+	} else if string(resp[0:4]) == FAIL {
+		return false, errors.New("adb response: Fail")
+	}
+	return false, errors.New("error response: " + string(resp))
+}
