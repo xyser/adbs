@@ -112,8 +112,6 @@ func (c Client) Disconnect(ip string, port int) (bool, error) {
 	}
 	if string(resp[0:4]) == OKAY {
 		length, _ := strconv.Atoi(string(resp[4:8]))
-		fmt.Println(length)
-		fmt.Println(resp)
 		var res = strings.Trim(string(resp[8:8+length]), "\n")
 		if strings.Contains(res, "No such device") {
 			return false, errors.New("no such device")
@@ -163,18 +161,4 @@ func (c Client) TrackDevices(callback TrackDevice) error {
 		}
 		callback(devices, nil)
 	})
-}
-
-// 连接一个设备
-func (c Client) Transport(serial string) (bool, error) {
-	resp, err := c.Command(fmt.Sprintf("host:transport:%s", serial))
-	if err != nil {
-		return false, err
-	}
-	if string(resp[0:4]) == OKAY {
-		return true, nil
-	} else if string(resp[0:4]) == FAIL {
-		return false, errors.New("adb response: Fail")
-	}
-	return false, errors.New("error response: " + string(resp))
 }
