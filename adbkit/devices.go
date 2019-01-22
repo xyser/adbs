@@ -141,6 +141,11 @@ func (c Client) Kill() (bool, error) {
 
 type TrackDevice func(devices []Device, err error)
 
+// 回调 设备连接变化
+//  err := adbkit.New("127.0.0.1", 5037).TrackDevices(func(devices []adbkit.Device, err error) {
+//		fmt.Println(err)
+//		fmt.Println(devices)
+//	})
 func (c Client) TrackDevices(callback TrackDevice) error {
 	return c.Callback("host:track-devices", func(buf []byte, err error) {
 		if string(buf) == OKAY {
@@ -158,4 +163,18 @@ func (c Client) TrackDevices(callback TrackDevice) error {
 		}
 		callback(devices, nil)
 	})
+}
+
+// 连接一个设备
+func (c Client) Transport(serial string) (bool, error) {
+	resp, err := c.Command(fmt.Sprintf("host:transport:%s", serial))
+	if err != nil {
+		return false, err
+	}
+	if string(resp[0:4]) == OKAY {
+		return true, nil
+	} else if string(resp[0:4]) == FAIL {
+		return false, errors.New("adb response: Fail")
+	}
+	return false, errors.New("error response: " + string(resp))
 }
