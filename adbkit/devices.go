@@ -138,3 +138,24 @@ func (c Client) Kill() (bool, error) {
 	}
 	return false, errors.New("error response: " + string(resp))
 }
+
+type TrackDevice func(devices []Device, err error)
+
+func (c Client) TrackDevices(callback TrackDevice) error {
+	return c.Callback("host:track-devices", func(buf []byte, err error) {
+		if string(buf) == OKAY {
+			return
+		}
+		if string(buf) == FAIL {
+			callback(nil, errors.New("adb response: Fail"))
+		}
+		var devices []Device
+		for _, line := range strings.Split(string(buf), "\n") {
+			device := strings.Split(line, "\t")
+			if len(device) > 1 {
+				devices = append(devices, Device{No: device[0], State: device[1]})
+			}
+		}
+		callback(devices, nil)
+	})
+}
