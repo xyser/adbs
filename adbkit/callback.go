@@ -68,15 +68,12 @@ func (c Client) Transport(serial string) (conn net.Conn, err error) {
 	}()
 
 	// 写入命令
-	fmt.Println(string(prefix + command))
 	_, err = conn.Write([]byte(prefix + command))
 	if err != err {
 		return nil, err
 	}
 
 	buf := <-readChan
-	fmt.Println(string(buf))
-
 	if string(buf) == OKAY {
 		return conn, nil
 	}
