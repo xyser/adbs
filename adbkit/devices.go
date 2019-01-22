@@ -11,17 +11,17 @@ const OKAY = "OKAY"
 const FAIL = "FAIL"
 
 type Device struct {
-	No    string `json:"no"`
-	State string `json:"state"`
+	No          string `json:"no"`
+	State       string `json:"state"`
+	Product     string `json:"product"`
+	Model       string `json:"model"`
+	Device      string `json:"device"`
+	TransportId int    `json:"transport_id"`
 }
 
 // 获取设备列表
-func (c Client) Devices(state bool) ([]Device, error) {
-	command := "host:devices"
-	if state {
-		command = "host:devices-l"
-	}
-	resp, err := c.Command(command)
+func (c Client) Devices() ([]Device, error) {
+	resp, err := c.Command("host:devices")
 	if err != nil {
 		return nil, err
 	}
@@ -32,6 +32,48 @@ func (c Client) Devices(state bool) ([]Device, error) {
 			if len(device) > 1 {
 				devices = append(devices, Device{No: device[0], State: device[1]})
 			}
+		}
+		return devices, nil
+	} else if string(resp[0:4]) == FAIL {
+		return nil, errors.New("adb response: Fail")
+	}
+	return nil, errors.New("error response: " + string(resp))
+}
+
+func (c Client) Lists() ([]Device, error) {
+	resp, err := c.Command("host:devices-l")
+	if err != nil {
+		return nil, err
+	}
+	if string(resp[0:4]) == OKAY {
+		var devices []Device
+		for _, line := range strings.Split(string(resp[8:]), "\n") {
+			var device Device
+			line := strings.Fields(strings.TrimSpace(line))
+			if len(line) < 2 {
+				continue
+			}
+			for i, item := range line {
+				switch true {
+				case i == 0:
+					device.No = line[0]
+				case i == 1:
+					device.State = line[1]
+				case strings.Contains(item, "product:"):
+					product := strings.Split(item, ":")
+					device.Product = product[1]
+				case strings.Contains(item, "model:"):
+					model := strings.Split(item, ":")
+					device.Model = model[1]
+				case strings.Contains(item, "device:"):
+					dev := strings.Split(item, ":")
+					device.Device = dev[1]
+				case strings.Contains(item, "transport_id:"):
+					transportId := strings.Split(item, ":")
+					device.TransportId, _ = strconv.Atoi(transportId[1])
+				}
+			}
+			devices = append(devices, device)
 		}
 		return devices, nil
 	} else if string(resp[0:4]) == FAIL {
