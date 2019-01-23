@@ -10,10 +10,10 @@ func EncodeCommend(command string) []byte {
 	prefix := strings.ToUpper("0000" + fmt.Sprintf("%X", len(command)))
 	length := len(prefix)
 	prefix = prefix[length-4 : length]
-	fmt.Println(prefix + command)
 	return []byte(prefix + command)
 }
 
+// 32位整形 转 []byte
 func Uint32ToBytes(n uint32) []byte {
 	return []byte{
 		byte(n),
