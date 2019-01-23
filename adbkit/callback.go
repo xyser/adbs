@@ -49,12 +49,6 @@ func (c Client) Transport(serial string) (conn net.Conn, err error) {
 		return nil, err
 	}
 
-	// 补充前缀
-	command := "host:transport:" + serial
-	prefix := strings.ToUpper("0000" + fmt.Sprintf("%X", len(command)))
-	length := len(prefix)
-	prefix = prefix[length-4 : length]
-
 	readChan := make(chan []byte)
 	go func() {
 		buffer := make([]byte, 4)
@@ -68,7 +62,8 @@ func (c Client) Transport(serial string) (conn net.Conn, err error) {
 	}()
 
 	// 写入命令
-	_, err = conn.Write([]byte(prefix + command))
+	command := "host:transport:" + serial
+	_, err = conn.Write(EncodeCommend(command))
 	if err != err {
 		return nil, err
 	}
