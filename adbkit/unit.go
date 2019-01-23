@@ -13,3 +13,12 @@ func EncodeCommend(command string) []byte {
 	fmt.Println(prefix + command)
 	return []byte(prefix + command)
 }
+
+func Uint32ToBytes(n uint32) []byte {
+	return []byte{
+		byte(n),
+		byte(n >> 8),
+		byte(n >> 16),
+		byte(n >> 24),
+	}
+}
