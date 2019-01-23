@@ -64,7 +64,7 @@ func (m Machine) Push(fh *multipart.FileHeader, remote string) {
 	path := remote + ",0644"
 
 	buf := new(bytes.Buffer)
-	buf.WriteString("SEND")
+	buf.WriteString(SEND)
 	buf.Write(Uint32ToBytes(uint32(len(path))))
 	buf.WriteString(path)
 	// 写入发送命令
@@ -84,7 +84,7 @@ func (m Machine) Push(fh *multipart.FileHeader, remote string) {
 		if err == io.EOF {
 			// 读取完毕
 			done := bytes.NewBuffer([]byte{})
-			done.WriteString("DONE")
+			done.WriteString(DONE)
 			done.Write(Uint32ToBytes(uint32(n)))
 			_, err = m.Conn.Write(done.Bytes())
 			if err != nil {
@@ -136,6 +136,8 @@ func (m Machine) Pull(remote string) {
 					}
 				}
 			}
+		case FAIL:
+			fmt.Println("文件保存错误")
 		}
 	}()
 
