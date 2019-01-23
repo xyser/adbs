@@ -97,7 +97,7 @@ func (m Machine) Push(fh *multipart.FileHeader, remote string) {
 
 		// 发送长度
 		data := bytes.NewBuffer([]byte{})
-		data.WriteString("DATA")
+		data.WriteString(DATA)
 		data.Write(Uint32ToBytes(uint32(n)))
 		_, _ = m.Conn.Write(data.Bytes())
 
@@ -143,10 +143,45 @@ func (m Machine) Pull(remote string) {
 
 	// 写入命令
 	buf := new(bytes.Buffer)
-	buf.WriteString("RECV")
+	buf.WriteString(RECV)
 	buf.Write(Uint32ToBytes(uint32(len(remote))))
 	buf.WriteString(remote)
 	_, _ = m.Conn.Write(buf.Bytes())
+
+	time.Sleep(10 * time.Second)
+}
+
+func (m Machine) Stat(remote string) {
+	m = m.Sync()
+
+	go func() {
+		buffer := make([]byte, 1024)
+		for {
+			n, err := m.Conn.Read(buffer)
+			if err == io.EOF {
+				fmt.Println("read finish")
+			}
+			if n > 0 {
+				fmt.Println("resp: " + string(buffer[0:n]))
+				fmt.Println(string(buffer[0:4]))
+				fmt.Println(binary.LittleEndian.Uint32(buffer[4:8]))
+				fmt.Println(binary.LittleEndian.Uint32(buffer[8:12]))
+				fmt.Println(binary.LittleEndian.Uint32(buffer[12:n]))
+				fmt.Println(n)
+
+			}
+		}
+	}()
+
+	buf := new(bytes.Buffer)
+	buf.WriteString(STAT)
+	buf.Write(Uint32ToBytes(uint32(len(remote))))
+	buf.WriteString(remote)
+	// 写入发送命令
+	_, err := m.Conn.Write(buf.Bytes())
+	if err != nil {
+		fmt.Println("write send error: " + err.Error())
+	}
 
 	time.Sleep(10 * time.Second)
 }

@@ -13,6 +13,8 @@ const (
 	DATA = "DATA"
 	SEND = "SEND"
 	DONE = "DONE"
+	RECV = "RECV"
+	STAT = "STAT"
 )
 
 type Device struct {
