@@ -151,3 +151,40 @@ func (c Client) GetPath(serial, pkg string) (path string, err error) {
 
 	return "", errors.New("adb response: " + string(resp))
 }
+
+func (c Client) UnInstall(serial, pkg string) (bool, error) {
+	conn, err := c.Transport(serial)
+	if err != nil {
+		return false, err
+	}
+	// 准备读取返回
+	readChan := make(chan []byte)
+	go func() {
+		buf, _ := ioutil.ReadAll(conn)
+		readChan <- buf
+	}()
+
+	// 写入命令
+	command := fmt.Sprintf("shell:pm uninstall %s", pkg)
+	_, err = conn.Write(EncodeCommend(command))
+	if err != err {
+		return false, err
+	}
+
+	resp := <-readChan
+	if string(resp[0:4]) == OKAY {
+		switch true {
+		case strings.Contains(string(resp[4:]), "Success"):
+			return true, nil
+		case strings.Contains(string(resp[4:]), "Failure"):
+			return false, errors.New("adb fail response: " + string(resp[4:]))
+		case strings.Contains(string(resp[4:]), "Unknown package"):
+			return false, errors.New("unknown package: " + pkg)
+		}
+		return false, errors.New(string(resp[4:]))
+	} else if string(resp[0:4]) == FAIL {
+		return false, errors.New("adb fail response: " + string(resp[4:]))
+	}
+
+	return false, errors.New("adb response: " + string(resp))
+}
