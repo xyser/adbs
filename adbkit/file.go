@@ -3,10 +3,13 @@ package adbkit
 import (
 	"bufio"
 	"bytes"
+	"encoding/binary"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"mime/multipart"
 	"net"
+	"time"
 )
 
 type Machine struct {
@@ -26,7 +29,6 @@ func (c Client) Select(serial string) Machine {
 	_, _ = conn.Read(buf)
 
 	if string(buf) == OKAY {
-		fmt.Println("host:transport: ok")
 		return Machine{Client: c, Serial: serial, Conn: conn}
 	}
 	return Machine{Client: c, Serial: serial}
@@ -41,7 +43,6 @@ func (m Machine) Sync() Machine {
 	_, _ = m.Conn.Read(buf)
 
 	if string(buf) == OKAY {
-		fmt.Println("sync: ok")
 		return m
 	}
 	return m
@@ -106,15 +107,34 @@ func (m Machine) Push(fh *multipart.FileHeader, remote string) {
 
 }
 
-func (m Machine) Pull(fh *multipart.FileHeader, remote string) {
+func (m Machine) Pull(remote string) {
 	m = m.Sync()
 
 	go func() {
-		buffer := make([]byte, 1024)
-		for {
-			n, _ := m.Conn.Read(buffer)
-			if n > 0 {
-				fmt.Println("resp: " + string(buffer[0:n]))
+		stat := make([]byte, 4)
+		_, _ = m.Conn.Read(stat)
+		fmt.Println(string(stat))
+		switch string(stat) {
+		case DATA:
+			// 读长度
+			leng := make([]byte, 4)
+			_, _ = m.Conn.Read(leng)
+			length := binary.LittleEndian.Uint32(leng)
+
+			if length > 0 {
+				conent := make([]byte, length)
+				n, _ := m.Conn.Read(conent)
+				if n > 0 {
+					err := ioutil.WriteFile("/go/adbs/1.png", conent, 0644)
+					if err != nil {
+						fmt.Println("file write error: " + err.Error())
+					}
+					done := make([]byte, 4)
+					_, _ = m.Conn.Read(done)
+					if string(done) == DONE {
+						fmt.Println("文件保存完成")
+					}
+				}
 			}
 		}
 	}()
@@ -124,5 +144,7 @@ func (m Machine) Pull(fh *multipart.FileHeader, remote string) {
 	buf.WriteString("RECV")
 	buf.Write(Uint32ToBytes(uint32(len(remote))))
 	buf.WriteString(remote)
+	_, _ = m.Conn.Write(buf.Bytes())
 
+	time.Sleep(10 * time.Second)
 }
