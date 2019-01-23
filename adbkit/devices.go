@@ -7,8 +7,13 @@ import (
 	"strings"
 )
 
-const OKAY = "OKAY"
-const FAIL = "FAIL"
+const (
+	OKAY = "OKAY"
+	FAIL = "FAIL"
+	DATA = "DATA"
+	SEND = "SEND"
+	DONE = "DONE"
+)
 
 type Device struct {
 	No          string `json:"no"`
