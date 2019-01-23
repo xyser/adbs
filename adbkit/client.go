@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
-	"strings"
 )
 
 type Client struct {
@@ -23,11 +22,6 @@ func (c Client) Command(command string) (response []byte, err error) {
 		return nil, err
 	}
 
-	// 补充前缀
-	prefix := strings.ToUpper("0000" + fmt.Sprintf("%X", len(command)))
-	length := len(prefix)
-	prefix = prefix[length-4 : length]
-
 	// 准备读取返回
 	readChan := make(chan []byte)
 	go func() {
@@ -36,7 +30,7 @@ func (c Client) Command(command string) (response []byte, err error) {
 	}()
 
 	// 写入命令
-	_, err = conn.Write([]byte(prefix + command))
+	_, err = conn.Write(EncodeCommend(command))
 	if err != err {
 		return nil, err
 	}
