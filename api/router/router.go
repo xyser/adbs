@@ -35,6 +35,8 @@ func Init() *gin.Engine {
 		handlers.WsHandler(c.Writer, c.Request)
 	})
 
+	r.POST("/upload", handlers.Upload)
+
 	//r.LoadHTMLGlob("templates/*")
 	r.LoadHTMLFiles("templates/shell.html")
 	r.GET("/", func(c *gin.Context) {
