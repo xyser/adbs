@@ -34,6 +34,8 @@ func Init() *gin.Engine {
 		api.GET("/device/pull", handlers.Pull)
 		// 获取目录
 		api.GET("/device/dir", handlers.Dir)
+		// 模拟输入
+		api.POST("/device/input", handlers.Input)
 	}
 
 	// 处理websocket
