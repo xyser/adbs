@@ -152,6 +152,42 @@ func (c Client) GetPath(serial, pkg string) (path string, err error) {
 	return "", errors.New("adb response: " + string(resp))
 }
 
+// 安装远端应用
+func (c Client) Install(serial, path string) (bool, error) {
+	conn, err := c.Transport(serial)
+	if err != nil {
+		return false, err
+	}
+	// 准备读取返回
+	readChan := make(chan []byte)
+	go func() {
+		buf, _ := ioutil.ReadAll(conn)
+		readChan <- buf
+	}()
+
+	// 写入命令
+	command := fmt.Sprintf("shell:pm install -r %s", path)
+	_, err = conn.Write(EncodeCommend(command))
+	if err != err {
+		return false, err
+	}
+
+	resp := <-readChan
+	if string(resp[0:4]) == OKAY {
+		switch true {
+		case strings.Contains(string(resp[4:]), "Success"):
+			return true, nil
+		case strings.Contains(string(resp[4:]), "Failure"):
+			return false, errors.New("adb fail response: " + string(resp[4:]))
+		}
+		return false, errors.New(string(resp[4:]))
+	} else if string(resp[0:4]) == FAIL {
+		return false, errors.New("adb fail response: " + string(resp[4:]))
+	}
+
+	return false, errors.New("adb response: " + string(resp))
+}
+
 func (c Client) UnInstall(serial, pkg string) (bool, error) {
 	conn, err := c.Transport(serial)
 	if err != nil {
