@@ -20,17 +20,18 @@ func Init() *gin.Engine {
 		// 获取设备列表
 		api.GET("/devices", handlers.GetDevices)
 		// 连接设备
-		api.POST("/devices/connect", handlers.ConnectDevice)
+		api.POST("/connect", handlers.ConnectDevice)
 		// 断开设备
-		api.POST("/devices/disconnect", handlers.DisconnectDevice)
+		api.POST("/disconnect", handlers.DisconnectDevice)
 
 		// 获取包列表
-		api.GET("/packages", handlers.GetPackages)
-
-		api.GET("/screencap", handlers.ScreenCap)
-
-		api.GET("/:serial/push", handlers.Push)
-		api.GET("/:serial/pull", handlers.Pull)
+		api.GET("/device/packages", handlers.GetPackages)
+		// 获取截屏
+		api.GET("/device/screencap", handlers.ScreenCap)
+		// 上传文件
+		api.POST("/device/push", handlers.Push)
+		// 拉取文件
+		api.GET("/device/pull", handlers.Pull)
 	}
 
 	// 处理websocket

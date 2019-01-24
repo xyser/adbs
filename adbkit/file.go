@@ -127,7 +127,7 @@ func (m Machine) Pull(remote string) ([]byte, error) {
 			leng := make([]byte, 4)
 			_, _ = m.Conn.Read(leng)
 			length := binary.LittleEndian.Uint32(leng)
-
+			fmt.Println("file length: " + string(length))
 			if length > 0 {
 				content := make([]byte, length)
 				n, _ := m.Conn.Read(content)

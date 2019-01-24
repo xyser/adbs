@@ -19,7 +19,7 @@ func Upload(c *gin.Context) {
 // 上传文件到 设备
 func Push(c *gin.Context) {
 	file, _ := c.FormFile("file")
-	serial := c.Param("serial")
+	serial := c.Query("serial")
 	p := c.Query("path")
 
 	adbkit.New("127.0.0.1", 5037).Select(serial).Push(file, p)
@@ -28,10 +28,15 @@ func Push(c *gin.Context) {
 
 // 从设备路径下载文件
 func Pull(c *gin.Context) {
-	serial := c.Param("serial")
+	serial := c.Query("serial")
 	p := c.Query("path")
+	fmt.Println(serial)
+	fmt.Println(p)
 
-	content, _ := adbkit.New("127.0.0.1", 5037).Select(serial).Pull(p)
+	content, err := adbkit.New("127.0.0.1", 5037).Select(serial).Pull(p)
+	if err != nil {
+		c.JSON(http.StatusGatewayTimeout, gin.H{"message": err.Error()})
+	}
 	c.Header("content-disposition", `attachment; filename=`+path.Base(p))
 	c.Data(200, mime.TypeByExtension(path.Ext(p)), content)
 }
