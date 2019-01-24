@@ -68,6 +68,7 @@ func Disconnect(ip string) (bool, error) {
 }
 
 // 获取连接的设备列表
+// Deprecated: 会逐渐采用 adbkit 代替
 func Lists() (devices []Device, err error) {
 	cmd := exec.Command("adb", "devices")
 
