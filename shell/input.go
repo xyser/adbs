@@ -5,6 +5,8 @@ import (
 	"os/exec"
 )
 
+// Input 用于模拟输入
+// 具体参数，参见：http://blog.bihe0832.com/adb-shell-input.html
 func Input(command, arg string) (bool, error) {
 	//函数返回一个*Cmd，用于使用给出的参数执行name指定的程序
 	cmd := exec.Command("adb", "shell", "input", command, arg)

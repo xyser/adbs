@@ -8,8 +8,8 @@ import (
 
 func Input(c *gin.Context) {
 	// serial := c.Query("serial")
-	command := c.Query("command")
-	arg := c.Query("arg")
+	command := c.PostForm("command")
+	arg := c.PostForm("arg")
 
 	_, err := shell.Input(command, arg)
 	if err != nil {
