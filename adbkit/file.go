@@ -13,6 +13,8 @@ import (
 	"time"
 )
 
+const TEMP_PATH = "/data/local/tmp"
+
 type Machine struct {
 	Client Client
 	Serial string
@@ -272,6 +274,9 @@ func (m Machine) Dir(path string) ([]Stat, error) {
 	case stat := <-statChan:
 		return stat, nil
 	case err := <-errChan:
-		return []Stat{}, err
+		// `var t []string` 声明了一个nil slice
+		// `t := []string{}` 声明了一个长度为0的非nil的slice。
+		var stats []Stat
+		return stats, err
 	}
 }
