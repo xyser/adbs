@@ -28,6 +28,9 @@ func Init() *gin.Engine {
 		api.GET("/packages", handlers.GetPackages)
 
 		api.GET("/screencap", handlers.ScreenCap)
+
+		api.GET("/:serial/push", handlers.Push)
+		api.GET("/:serial/pull", handlers.Pull)
 	}
 
 	// 处理websocket

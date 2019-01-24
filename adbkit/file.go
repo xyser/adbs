@@ -4,9 +4,9 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"mime/multipart"
 	"net"
 	"time"
@@ -107,13 +107,14 @@ func (m Machine) Push(fh *multipart.FileHeader, remote string) {
 
 }
 
-func (m Machine) Pull(remote string) {
+func (m Machine) Pull(remote string) ([]byte, error) {
 	m = m.Sync()
 
+	readChan := make(chan []byte)
+	errChan := make(chan error)
 	go func() {
 		stat := make([]byte, 4)
 		_, _ = m.Conn.Read(stat)
-		fmt.Println(string(stat))
 		switch string(stat) {
 		case DATA:
 			// 读长度
@@ -122,22 +123,18 @@ func (m Machine) Pull(remote string) {
 			length := binary.LittleEndian.Uint32(leng)
 
 			if length > 0 {
-				conent := make([]byte, length)
-				n, _ := m.Conn.Read(conent)
+				content := make([]byte, length)
+				n, _ := m.Conn.Read(content)
 				if n > 0 {
-					err := ioutil.WriteFile("/go/adbs/1.png", conent, 0644)
-					if err != nil {
-						fmt.Println("file write error: " + err.Error())
-					}
 					done := make([]byte, 4)
 					_, _ = m.Conn.Read(done)
 					if string(done) == DONE {
-						fmt.Println("文件保存完成")
+						readChan <- content
 					}
 				}
 			}
 		case FAIL:
-			fmt.Println("文件保存错误")
+			errChan <- errors.New("adb response: FAIL")
 		}
 	}()
 
@@ -146,9 +143,17 @@ func (m Machine) Pull(remote string) {
 	buf.WriteString(RECV)
 	buf.Write(Uint32ToBytes(uint32(len(remote))))
 	buf.WriteString(remote)
-	_, _ = m.Conn.Write(buf.Bytes())
+	_, err := m.Conn.Write(buf.Bytes())
+	if err != nil {
+		return nil, err
+	}
 
-	time.Sleep(10 * time.Second)
+	select {
+	case content := <-readChan:
+		return content, nil
+	case err := <-errChan:
+		return nil, err
+	}
 }
 
 func (m Machine) Stat(remote string) {
