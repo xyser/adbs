@@ -1,6 +1,7 @@
 package adbkit
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -12,6 +13,9 @@ type Client struct {
 }
 
 func New(host string, port int) Client {
+	if !CheckTcp(host, port) {
+		panic(errors.New("network fail"))
+	}
 	return Client{Host: host, Port: port}
 }
 
@@ -36,4 +40,11 @@ func (c Client) Command(command string) (response []byte, err error) {
 	}
 
 	return <-readChan, nil
+}
+
+func CheckTcp(host string, port int) bool {
+	if _, err := net.Dial("tcp", fmt.Sprintf("%s:%d", host, port)); err != nil {
+		return false
+	}
+	return true
 }
