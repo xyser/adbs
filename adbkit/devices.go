@@ -15,6 +15,8 @@ const (
 	DONE = "DONE"
 	RECV = "RECV"
 	STAT = "STAT"
+	LIST = "LIST"
+	DENT = "DENT"
 )
 
 type Device struct {

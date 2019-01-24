@@ -19,6 +19,7 @@ type Machine struct {
 	Conn   net.Conn
 }
 
+// 选择一个设备
 func (c Client) Select(serial string) Machine {
 	conn, _ := net.Dial("tcp", fmt.Sprintf("%s:%d", c.Host, c.Port))
 
@@ -49,6 +50,7 @@ func (m Machine) Sync() Machine {
 	return m
 }
 
+// 上传一个文件
 func (m Machine) Push(fh *multipart.FileHeader, remote string) {
 	m = m.Sync()
 	go func() {
@@ -108,6 +110,7 @@ func (m Machine) Push(fh *multipart.FileHeader, remote string) {
 
 }
 
+// 拉取一个文件
 func (m Machine) Pull(remote string) ([]byte, error) {
 	m = m.Sync()
 
@@ -157,14 +160,15 @@ func (m Machine) Pull(remote string) ([]byte, error) {
 	}
 }
 
+// 文件信息结构体
 type Stat struct {
 	Name    string
 	Size    int64
 	Mode    os.FileMode
 	ModTime time.Time
-	IsDir   bool
 }
 
+// 获取路径文件信息
 func (m Machine) Stat(remote string) (Stat, error) {
 	m = m.Sync()
 
@@ -206,5 +210,68 @@ func (m Machine) Stat(remote string) (Stat, error) {
 		return stat, nil
 	case err := <-errChan:
 		return Stat{}, err
+	}
+}
+
+// 获取路径目录
+func (m Machine) Dir(path string) ([]Stat, error) {
+	m = m.Sync()
+
+	statChan := make(chan []Stat)
+	errChan := make(chan error)
+	go func() {
+		var stats []Stat
+		for {
+			buffer := make([]byte, 4)
+
+			_, err := m.Conn.Read(buffer)
+			if err != nil {
+				errChan <- err
+			}
+			switch string(buffer) {
+			case DENT:
+				buffer = make([]byte, 16)
+				n, err := m.Conn.Read(buffer)
+				if err != nil {
+					errChan <- err
+				}
+				var stat Stat
+				stat.Mode = os.FileMode(binary.LittleEndian.Uint32(buffer[0:4])) // 文件权限
+				stat.Size = int64(binary.LittleEndian.Uint32(buffer[4:8]))
+				stat.ModTime = time.Unix(int64(binary.LittleEndian.Uint32(buffer[8:12])), 0)
+
+				// 读文件名
+				nameLen := binary.LittleEndian.Uint32(buffer[12:n])
+				nameBuf := make([]byte, nameLen)
+				_, err = m.Conn.Read(nameBuf)
+				if err != nil {
+					errChan <- err
+				}
+				if string(nameBuf) != "." && string(nameBuf) != ".." {
+					stat.Name = string(nameBuf)
+					stats = append(stats, stat)
+				}
+			case DONE:
+				statChan <- stats
+				break
+			}
+		}
+	}()
+
+	buf := new(bytes.Buffer)
+	buf.WriteString(LIST)
+	buf.Write(Uint32ToBytes(uint32(len(path))))
+	buf.WriteString(path)
+	// 写入发送命令
+	_, err := m.Conn.Write(buf.Bytes())
+	if err != nil {
+		fmt.Println("write send error: " + err.Error())
+	}
+
+	select {
+	case stat := <-statChan:
+		return stat, nil
+	case err := <-errChan:
+		return []Stat{}, err
 	}
 }
