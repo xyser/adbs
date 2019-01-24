@@ -9,6 +9,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net"
+	"os"
 	"time"
 )
 
@@ -156,26 +157,38 @@ func (m Machine) Pull(remote string) ([]byte, error) {
 	}
 }
 
-func (m Machine) Stat(remote string) {
+type Stat struct {
+	Name    string
+	Size    int64
+	Mode    os.FileMode
+	ModTime time.Time
+	IsDir   bool
+}
+
+func (m Machine) Stat(remote string) (Stat, error) {
 	m = m.Sync()
 
+	statChan := make(chan Stat)
+	errChan := make(chan error)
 	go func() {
-		buffer := make([]byte, 1024)
-		for {
-			n, err := m.Conn.Read(buffer)
-			if err == io.EOF {
-				fmt.Println("read finish")
-			}
-			if n > 0 {
-				fmt.Println("resp: " + string(buffer[0:n]))
-				fmt.Println(string(buffer[0:4]))
-				fmt.Println(binary.LittleEndian.Uint32(buffer[4:8]))
-				fmt.Println(binary.LittleEndian.Uint32(buffer[8:12]))
-				fmt.Println(binary.LittleEndian.Uint32(buffer[12:n]))
-				fmt.Println(n)
+		buffer := make([]byte, 16)
 
+		n, err := m.Conn.Read(buffer)
+		if err != nil {
+			errChan <- err
+		}
+		if n > 0 {
+			var stat Stat
+			if string(buffer[0:4]) == STAT {
+				stat.Mode = os.FileMode(binary.LittleEndian.Uint32(buffer[4:8])) // 文件权限
+				stat.Size = int64(binary.LittleEndian.Uint32(buffer[8:12]))
+				stat.ModTime = time.Unix(int64(binary.LittleEndian.Uint32(buffer[12:n])), 0)
+				statChan <- stat
+			} else {
+				errChan <- errors.New("resp error: " + string(buffer))
 			}
 		}
+		errChan <- errors.New("socket read error")
 	}()
 
 	buf := new(bytes.Buffer)
@@ -188,5 +201,10 @@ func (m Machine) Stat(remote string) {
 		fmt.Println("write send error: " + err.Error())
 	}
 
-	time.Sleep(10 * time.Second)
+	select {
+	case stat := <-statChan:
+		return stat, nil
+	case err := <-errChan:
+		return Stat{}, err
+	}
 }
