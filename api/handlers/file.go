@@ -34,6 +34,7 @@ func Pull(c *gin.Context) {
 	content, err := adbkit.New("127.0.0.1", 5037).Select(serial).Pull(p)
 	if err != nil {
 		c.JSON(http.StatusGatewayTimeout, gin.H{"message": err.Error()})
+		return
 	}
 	c.Header("content-disposition", `attachment; filename=`+path.Base(p))
 	c.Data(200, mime.TypeByExtension(path.Ext(p)), content)
@@ -45,6 +46,7 @@ func Dir(c *gin.Context) {
 	stats, err := adbkit.New("127.0.0.1", 5037).Select(serial).Dir(p)
 	if err != nil {
 		c.JSON(http.StatusGatewayTimeout, gin.H{"message": err.Error()})
+		return
 	}
 	var resp []gin.H
 	for _, stat := range stats {
