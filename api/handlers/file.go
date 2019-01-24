@@ -30,8 +30,6 @@ func Push(c *gin.Context) {
 func Pull(c *gin.Context) {
 	serial := c.Query("serial")
 	p := c.Query("path")
-	fmt.Println(serial)
-	fmt.Println(p)
 
 	content, err := adbkit.New("127.0.0.1", 5037).Select(serial).Pull(p)
 	if err != nil {
@@ -39,4 +37,25 @@ func Pull(c *gin.Context) {
 	}
 	c.Header("content-disposition", `attachment; filename=`+path.Base(p))
 	c.Data(200, mime.TypeByExtension(path.Ext(p)), content)
+}
+
+func Dir(c *gin.Context) {
+	serial := c.Query("serial")
+	p := c.Query("path")
+	stats, err := adbkit.New("127.0.0.1", 5037).Select(serial).Dir(p)
+	if err != nil {
+		c.JSON(http.StatusGatewayTimeout, gin.H{"message": err.Error()})
+	}
+	var resp []gin.H
+	for _, stat := range stats {
+		var s = gin.H{
+			"name":     stat.Name,
+			"size":     stat.Size,
+			"mode":     stat.Mode.String(),
+			"mod_time": stat.ModTime,
+		}
+		resp = append(resp, s)
+	}
+
+	c.JSON(http.StatusOK, resp)
 }

@@ -32,6 +32,8 @@ func Init() *gin.Engine {
 		api.POST("/device/push", handlers.Push)
 		// 拉取文件
 		api.GET("/device/pull", handlers.Pull)
+		// 获取目录
+		api.GET("/device/dir", handlers.Dir)
 	}
 
 	// 处理websocket

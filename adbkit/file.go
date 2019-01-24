@@ -73,17 +73,15 @@ func (m Machine) Push(fh *multipart.FileHeader, remote string) {
 	buf.Write(Uint32ToBytes(uint32(len(path))))
 	buf.WriteString(path)
 	// 写入发送命令
-	n, err := m.Conn.Write(buf.Bytes())
+	_, err := m.Conn.Write(buf.Bytes())
 	if err != nil {
 		fmt.Println("write send error: " + err.Error())
 	}
-	fmt.Printf("bytes length: %d, %s\n", n, buf.Bytes())
 
 	file, _ := fh.Open()
 	inputReader := bufio.NewReader(file)
 
 	for {
-
 		track := make([]byte, 65536)
 		n, err := inputReader.Read(track)
 		if err == io.EOF {
@@ -95,8 +93,6 @@ func (m Machine) Push(fh *multipart.FileHeader, remote string) {
 			if err != nil {
 				fmt.Println("write done error: " + err.Error())
 			}
-
-			fmt.Printf("upload done: %d\n", n)
 			break
 		}
 
@@ -119,29 +115,41 @@ func (m Machine) Pull(remote string) ([]byte, error) {
 	readChan := make(chan []byte)
 	errChan := make(chan error)
 	go func() {
-		stat := make([]byte, 4)
-		_, _ = m.Conn.Read(stat)
-		switch string(stat) {
-		case DATA:
-			// 读长度
-			leng := make([]byte, 4)
-			_, _ = m.Conn.Read(leng)
-			length := binary.LittleEndian.Uint32(leng)
-			fmt.Println("file length: " + string(length))
-			if length > 0 {
-				content := make([]byte, length)
-				n, _ := m.Conn.Read(content)
-				if n > 0 {
-					done := make([]byte, 4)
-					_, _ = m.Conn.Read(done)
-					if string(done) == DONE {
-						readChan <- content
+		buf := bytes.NewBuffer([]byte{})
+
+		for {
+			stat := make([]byte, 4)
+			_, err := m.Conn.Read(stat)
+			if err != nil {
+				errChan <- err
+			}
+
+			switch string(stat) {
+			case DATA:
+				// 读长度
+				leng := make([]byte, 4)
+				_, err := m.Conn.Read(leng)
+				if err != nil {
+					errChan <- err
+				}
+				length := binary.LittleEndian.Uint32(leng)
+				if length > 0 {
+					content := make([]byte, length)
+					n, err := m.Conn.Read(content)
+					if err != nil {
+						errChan <- err
+					}
+					if n > 0 {
+						buf.Write(content)
 					}
 				}
+			case FAIL:
+				errChan <- errors.New("adb response: FAIL")
+			case DONE:
+				readChan <- buf.Bytes()
 			}
-		case FAIL:
-			errChan <- errors.New("adb response: FAIL")
 		}
+
 	}()
 
 	// 写入命令
