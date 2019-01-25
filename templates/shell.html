@@ -35,7 +35,7 @@
     Terminal.applyAddon(webLinks);
 
     var term;
-    var websocket = new WebSocket("ws://" + window.location.hostname + ":" + window.location.port + "/ws/shell");
+    var websocket = new WebSocket("ws://" + window.location.hostname + ":" + window.location.port + "/api/device/shell/ws");
     websocket.binaryType = "arraybuffer";
 
     websocket.onopen = function(evt) {

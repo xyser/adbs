@@ -17,33 +17,40 @@ func Init() *gin.Engine {
 
 	api := r.Group("/api")
 	{
-		// 获取设备列表
-		api.GET("/devices", handlers.GetDevices)
-		// 连接设备
-		api.POST("/connect", handlers.ConnectDevice)
-		// 断开设备
-		api.POST("/disconnect", handlers.DisconnectDevice)
+		// 设备列表管理
+		devices := api.Group("/devices")
+		{
+			// 获取设备列表
+			devices.GET("/", handlers.GetDevices)
+			// 连接设备
+			devices.POST("/connect", handlers.ConnectDevice)
+			// 断开设备
+			devices.POST("/disconnect", handlers.DisconnectDevice)
+		}
 
-		// 获取包列表
-		api.GET("/device/packages", handlers.GetPackages)
-		// 获取截屏
-		api.GET("/device/screencap", handlers.ScreenCap)
-		// 上传文件
-		api.POST("/device/push", handlers.Push)
-		// 拉取文件
-		api.GET("/device/pull", handlers.Pull)
-		// 获取目录
-		api.GET("/device/dir", handlers.Dir)
-		// 模拟输入
-		api.POST("/device/input", handlers.Input)
+		// 单台设备管理
+		device := api.Group("/device")
+		{
+			// 获取包列表
+			device.GET("/packages", handlers.GetPackages)
+			// 获取截屏
+			device.GET("/screencap", handlers.ScreenCap)
+			// 上传文件
+			device.POST("/push", handlers.Push)
+			// 拉取文件
+			device.GET("/pull", handlers.Pull)
+			// 获取目录
+			device.GET("/dir", handlers.Dir)
+			device.GET("/stat", handlers.Stat)
+			// 模拟输入
+			device.POST("/input", handlers.Input)
+
+			// 处理websocket
+			device.GET("/shell/ws", func(c *gin.Context) {
+				handlers.WsHandler(c.Writer, c.Request)
+			})
+		}
 	}
-
-	// 处理websocket
-	r.GET("/ws/shell", func(c *gin.Context) {
-		handlers.WsHandler(c.Writer, c.Request)
-	})
-
-	r.POST("/upload", handlers.Upload)
 
 	//r.LoadHTMLGlob("templates/*")
 	r.LoadHTMLFiles("templates/shell.html")
