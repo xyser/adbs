@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
+	"net"
 	"net/http"
 	"strconv"
 )
@@ -30,6 +31,12 @@ func ConnectDevice(c *gin.Context) {
 	var message = "success"
 
 	ip := c.PostForm("ip")
+
+	if ip == "" || net.ParseIP(ip) == nil {
+		c.JSON(http.StatusOK, gin.H{"message": "IP Error"})
+		return
+	}
+
 	bo, err := shell.Connect(ip)
 	if err != nil || !bo {
 		message = fmt.Sprintf("devices connect: %s", err.Error())
@@ -43,6 +50,11 @@ func DisconnectDevice(c *gin.Context) {
 	var message = "success"
 
 	ip := c.PostForm("ip")
+	if ip == "" || net.ParseIP(ip) == nil {
+		c.JSON(http.StatusOK, gin.H{"message": "IP Error"})
+		return
+	}
+
 	bo, err := shell.Disconnect(ip)
 	if err != nil || !bo {
 		message = fmt.Sprintf("devices connect: %s", err.Error())
