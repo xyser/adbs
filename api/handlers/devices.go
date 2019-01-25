@@ -29,15 +29,8 @@ func GetDevices(c *gin.Context) {
 func ConnectDevice(c *gin.Context) {
 	var message = "success"
 
-	var post struct {
-		Ip string `json:"ip"`
-	}
-	if err := c.ShouldBindJSON(&post); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
-		return
-	}
-
-	bo, err := shell.Connect(post.Ip)
+	ip := c.PostForm("ip")
+	bo, err := shell.Connect(ip)
 	if err != nil || !bo {
 		message = fmt.Sprintf("devices connect: %s", err.Error())
 	}
@@ -49,13 +42,8 @@ func ConnectDevice(c *gin.Context) {
 func DisconnectDevice(c *gin.Context) {
 	var message = "success"
 
-	var post struct {
-		Ip string `json:"ip"`
-	}
-	if err := c.ShouldBindJSON(&post); err != nil {
-		post.Ip = "all"
-	}
-	bo, err := shell.Disconnect(post.Ip)
+	ip := c.PostForm("ip")
+	bo, err := shell.Disconnect(ip)
 	if err != nil || !bo {
 		message = fmt.Sprintf("devices connect: %s", err.Error())
 	}
