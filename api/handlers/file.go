@@ -2,19 +2,11 @@ package handlers
 
 import (
 	"adbs/adbkit"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"mime"
 	"net/http"
 	"path"
 )
-
-func Upload(c *gin.Context) {
-	file, _ := c.FormFile("file")
-
-	adbkit.New("127.0.0.1", 5037).Select("emulator-5554").Push(file, "/sdcard/a.png")
-	c.String(http.StatusOK, fmt.Sprintf("'%s' uploaded!", file.Filename))
-}
 
 // 上传文件到 设备
 func Push(c *gin.Context) {
@@ -43,6 +35,14 @@ func Pull(c *gin.Context) {
 func Dir(c *gin.Context) {
 	serial := c.Query("serial")
 	p := c.Query("path")
+
+	defer func() {
+		if err := recover(); err != nil {
+			c.JSON(http.StatusGatewayTimeout, gin.H{"message": err})
+			return
+		}
+	}()
+
 	stats, err := adbkit.New("127.0.0.1", 5037).Select(serial).Dir(p)
 	if err != nil {
 		c.JSON(http.StatusGatewayTimeout, gin.H{"message": err.Error()})
@@ -60,4 +60,30 @@ func Dir(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, resp)
+}
+
+func Stat(c *gin.Context) {
+	serial := c.Query("serial")
+	p := c.Query("path")
+
+	defer func() {
+		if err := recover(); err != nil {
+			c.JSON(http.StatusGatewayTimeout, gin.H{"message": err})
+			return
+		}
+	}()
+
+	stat, err := adbkit.New("127.0.0.1", 5037).Select(serial).Stat(p)
+	if err != nil {
+		c.JSON(http.StatusGatewayTimeout, gin.H{"message": err.Error()})
+		return
+	}
+	var s = gin.H{
+		"name":     stat.Name,
+		"size":     stat.Size,
+		"mode":     stat.Mode.String(),
+		"mod_time": stat.ModTime,
+	}
+
+	c.JSON(http.StatusOK, s)
 }
