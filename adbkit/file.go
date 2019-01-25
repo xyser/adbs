@@ -88,7 +88,7 @@ func (m Machine) Push(fh *multipart.FileHeader, remote string) {
 			// 读取完毕
 			done := bytes.NewBuffer([]byte{})
 			done.WriteString(DONE)
-			done.Write(Uint32ToBytes(uint32(n)))
+			done.WriteString(string(time.Now().Unix()))
 			_, err = m.Conn.Write(done.Bytes())
 			if err != nil {
 				fmt.Println("write done error: " + err.Error())
@@ -118,35 +118,35 @@ func (m Machine) Pull(remote string) ([]byte, error) {
 		buf := bytes.NewBuffer([]byte{})
 
 		for {
-			stat := make([]byte, 4)
-			_, err := m.Conn.Read(stat)
+			stat := make([]byte, 8)
+			n, err := m.Conn.Read(stat)
 			if err != nil {
 				errChan <- err
 			}
 
-			switch string(stat) {
+			switch string(stat[0:4]) {
 			case DATA:
 				// 读长度
-				leng := make([]byte, 4)
-				_, err := m.Conn.Read(leng)
-				if err != nil {
-					errChan <- err
-				}
-				length := binary.LittleEndian.Uint32(leng)
-				if length > 0 {
+				length := binary.LittleEndian.Uint32(stat[4:n])
+
+				// 循环读取文件
+				for length > 0 {
 					content := make([]byte, length)
 					n, err := m.Conn.Read(content)
 					if err != nil {
 						errChan <- err
 					}
 					if n > 0 {
-						buf.Write(content)
+						buf.Write(content[0:n])
+						length = length - uint32(n)
 					}
 				}
 			case FAIL:
 				errChan <- errors.New("adb response: FAIL")
 			case DONE:
 				readChan <- buf.Bytes()
+			default:
+				errChan <- errors.New("adb response: " + string(stat))
 			}
 		}
 
@@ -194,7 +194,13 @@ func (m Machine) Stat(remote string) (Stat, error) {
 		if n > 0 {
 			var stat Stat
 			if string(buffer[0:4]) == STAT {
-				stat.Mode = os.FileMode(binary.LittleEndian.Uint32(buffer[4:8])) // 文件权限
+				fmt.Println(buffer[4:8])
+				mode := binary.LittleEndian.Uint32(buffer[4:8])
+				if mode == 0 {
+					errChan <- errors.New("no find path")
+				}
+				fmt.Println(mode)
+				stat.Mode = os.FileMode(mode) // 文件权限
 				stat.Size = int64(binary.LittleEndian.Uint32(buffer[8:12]))
 				stat.ModTime = time.Unix(int64(binary.LittleEndian.Uint32(buffer[12:n])), 0)
 				statChan <- stat
@@ -264,6 +270,8 @@ func (m Machine) Dir(path string) ([]Stat, error) {
 			case DONE:
 				statChan <- stats
 				break
+			default:
+				fmt.Println(string(buffer))
 			}
 		}
 	}()
