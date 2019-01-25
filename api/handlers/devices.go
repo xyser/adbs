@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"adbs/adbkit"
 	"adbs/shell"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -13,7 +14,7 @@ import (
 // 获取多个项目
 func GetDevices(c *gin.Context) {
 	// 设备列表
-	devices, err := shell.Lists()
+	devices, err := adbkit.New("127.0.0.1", 5037).Lists()
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"message": fmt.Sprintf("devices error: %s", err.Error()),
