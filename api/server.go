@@ -24,7 +24,7 @@ func Init() {
 
 	go func() {
 		if err := s.ListenAndServe(); err != nil {
-			log.Printf("Listen: %s\n", err)
+			log.Printf("Listen Error: %s\n", err)
 		}
 	}()
 
