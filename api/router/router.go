@@ -34,7 +34,7 @@ func Init() *gin.Engine {
 			// 获取包列表
 			device.GET("/packages", handlers.GetPackages)
 			// 获取截屏
-			device.GET("/screencap", handlers.ScreenCap)
+			device.GET("/screencap", handlers.Screencap)
 			// 上传文件
 			device.POST("/push", handlers.Push)
 			// 拉取文件
@@ -44,6 +44,8 @@ func Init() *gin.Engine {
 			device.GET("/stat", handlers.Stat)
 			// 模拟输入
 			device.POST("/input", handlers.Input)
+			// 获取屏幕尺寸
+			device.GET("/window/size", handlers.WindowSize)
 
 			// 处理websocket
 			device.GET("/shell/ws", func(c *gin.Context) {

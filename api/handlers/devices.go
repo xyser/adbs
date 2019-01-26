@@ -65,14 +65,26 @@ func DisconnectDevice(c *gin.Context) {
 	})
 }
 
-func ScreenCap(c *gin.Context) {
-	buffer, err := shell.Screencap()
+func Screencap(c *gin.Context) {
+	serial := c.Query("serial")
+	buffer, err := adbkit.New("127.0.0.1", 5037).Screencap(serial)
 	if err == nil {
 		c.Writer.Header().Set("Content-Type", "image/png")
 		c.Writer.Header().Set("Content-Length", strconv.Itoa(len(buffer)))
 		if _, err := c.Writer.Write(buffer); err != nil {
 			log.Println("unable to write image.")
 		}
+	} else {
+		c.String(http.StatusOK, err.Error())
+	}
+
+}
+
+func WindowSize(c *gin.Context) {
+	serial := c.Query("serial")
+	w, h, err := adbkit.New("127.0.0.1", 5037).ScreenSize(serial)
+	if err == nil {
+		c.JSON(http.StatusOK, gin.H{"width": w, "height": h})
 	} else {
 		c.String(http.StatusOK, err.Error())
 	}
