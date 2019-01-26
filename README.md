@@ -48,7 +48,7 @@ go get github.com/dingdayu/adbs
 - [X] 写文件时的时间
 - [ ] 推文件写入协议优化
 - [ ] 获取文件信息时的文件类型问题（目录/连接）
-- [ ] shell 的 设备选择问题
+- [X] shell 的 设备选择问题
 
 
 ## Reference

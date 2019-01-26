@@ -25,11 +25,12 @@ var wsUpgrade = websocket.Upgrader{
 // 处理ws请求
 func WsHandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := wsUpgrade.Upgrade(w, r, nil)
+	serial := r.URL.Query().Get("serial")
 	if err != nil {
 		fmt.Println("Failed to set websocket upgrade: %+v", err)
 		return
 	}
 	defer conn.Close()
 	// 剩下的SHELL处理
-	shell.Shell(conn)
+	shell.Shell(conn, serial)
 }

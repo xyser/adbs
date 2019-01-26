@@ -29,9 +29,9 @@ type windowSize struct {
 	Y    uint16
 }
 
-func Shell(conn *websocket.Conn) {
+func Shell(conn *websocket.Conn, serial string) {
 	//函数返回一个*Cmd，用于使用给出的参数执行name指定的程序
-	cmd := exec.Command("adb", "shell")
+	cmd := exec.Command("adb", "-s", serial, "shell")
 	cmd.Env = append(os.Environ(), "TERM=xterm")
 
 	tty, err := pty.Start(cmd)
