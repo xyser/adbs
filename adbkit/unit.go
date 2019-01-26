@@ -45,3 +45,9 @@ func IsBelong(ip, cidr string) bool {
 	}
 	return strings.Join(tmp, `.`) == cidrArr[0]
 }
+
+// Atoi 用于内部 字符串转整形
+func Atoi(s string) int {
+	n, _ := strconv.Atoi(s)
+	return n
+}

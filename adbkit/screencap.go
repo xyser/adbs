@@ -3,24 +3,21 @@ package adbkit
 import (
 	"bytes"
 	"errors"
-	"io"
 	"io/ioutil"
 	"regexp"
-	"strconv"
-	"strings"
 )
 
 // Screencap 用于获取屏幕截图(未压缩)
-func (c Client) Screencap(serial string) ([]byte, error) {
+func (c Client) Screencap(serial string) (buf []byte, err error) {
 	conn, err := c.Transport(serial)
 	if err != nil {
-		return nil, err
+		return
 	}
 
 	// 写入命令
 	_, err = conn.Write(EncodeCommend("shell:screencap -p 2>/dev/null"))
 	if err != err {
-		return nil, err
+		return
 	}
 
 	stat := make([]byte, 4)
@@ -30,21 +27,11 @@ func (c Client) Screencap(serial string) ([]byte, error) {
 	}
 
 	if string(stat) == OKAY {
-		buf := bytes.NewBuffer([]byte{})
-		for {
-			temp := make([]byte, 1024)
-			n, err := conn.Read(temp)
-			if err == io.EOF {
-				break
-			}
-			if n > 0 {
-				buf.Write(temp[0:n])
-			}
-		}
-
-		con := []byte(strings.Replace(buf.String(), "\x0D\x0A", "\x0A", -1))
-		err = ioutil.WriteFile("/go/adbs/1.png", con, 0644)
-		return con, err
+		buf, _ = ioutil.ReadAll(conn)
+		// 此处用于 将 \r\n 替换为 \n,
+		// https://stackoverflow.com/questions/13578416/read-binary-stdout-data-from-adb-shell
+		buf = bytes.Replace(buf, []byte("\x0D\x0A"), []byte("\x0A"), -1)
+		return
 	} else if string(stat) == FAIL {
 		return nil, errors.New("adb response: Fail")
 	}
@@ -60,7 +47,6 @@ func (c Client) ScreenSize(serial string) (width int, height int, err error) {
 	}
 
 	// 写入命令
-	//_, err = conn.Write(EncodeCommend("shell:cat /sdcard/a.png"))
 	_, err = conn.Write(EncodeCommend("shell:dumpsys window 2>/dev/null"))
 	if err != err {
 		return
@@ -78,12 +64,11 @@ func (c Client) ScreenSize(serial string) (width int, height int, err error) {
 		out, _ := ioutil.ReadAll(conn)
 		matches := rsRE.FindStringSubmatch(string(out))
 		if len(matches) == 0 {
-			err = errors.New("get shape(width,height) from device error")
-			return
+			return 0, 0, errors.New("get shape(width,height) from device error")
 		}
-		width, _ = strconv.Atoi(matches[1])
-		height, _ = strconv.Atoi(matches[2])
-		return
+		return Atoi(matches[1]), Atoi(matches[2]), nil
+	} else if string(stat) == FAIL {
+		return 0, 0, errors.New("adb response: Fail")
 	}
-	return
+	return 0, 0, errors.New("adb response: " + string(stat))
 }

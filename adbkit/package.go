@@ -141,6 +141,7 @@ func (c Client) GetPath(serial, pkg string) (path string, err error) {
 
 	resp := <-readChan
 	if string(resp[0:4]) == OKAY {
+		// 4:12 为固定字符串: package:
 		if len(resp) > 12 {
 			return strings.TrimRight(string(resp[12:]), "\n"), nil
 		}
