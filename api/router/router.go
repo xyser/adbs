@@ -2,6 +2,7 @@ package router
 
 import (
 	"adbs/api/handlers"
+	"github.com/gin-gonic/contrib/cors"
 	"github.com/gin-gonic/contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -12,6 +13,13 @@ func Init() *gin.Engine {
 
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
+
+	// 开启跨域
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true
+	r.Use(cors.New(config))
+
+	// 开启压缩
 	r.Use(gzip.Gzip(gzip.DefaultCompression))
 	gin.SetMode("debug")
 
@@ -21,7 +29,7 @@ func Init() *gin.Engine {
 		devices := api.Group("/devices")
 		{
 			// 获取设备列表
-			devices.GET("/", handlers.GetDevices)
+			devices.GET("", handlers.GetDevices)
 			// 连接设备
 			devices.POST("/connect", handlers.ConnectDevice)
 			// 断开设备
