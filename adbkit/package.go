@@ -227,7 +227,7 @@ func (c Client) UnInstall(serial, pkg string) (bool, error) {
 }
 
 // 打开 Activity or Service
-func (c Client) Start(serial, command string, args map[string]string) (bool, error) {
+func (c Client) PackageManager(serial, command string, args []string) (bool, error) {
 	conn, err := c.Transport(serial)
 	if err != nil {
 		return false, err
@@ -240,7 +240,10 @@ func (c Client) Start(serial, command string, args map[string]string) (bool, err
 	}()
 
 	// 写入命令
-	command = fmt.Sprintf("shell:am %s", command)
+	if len(args) > 0 {
+		command = command + strings.Join(args, " ")
+	}
+	command = fmt.Sprintf("shell:pm %s", command)
 	_, err = conn.Write(EncodeCommend(command))
 	if err != err {
 		return false, err
