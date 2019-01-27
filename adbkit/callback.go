@@ -71,6 +71,8 @@ func (c Client) Transport(serial string) (conn net.Conn, err error) {
 	buf := <-readChan
 	if string(buf) == OKAY {
 		return conn, nil
+	} else if string(buf[0:4]) == FAIL {
+		return nil, errors.New("adb fail response: " + string(buf))
 	}
 
 	return nil, errors.New("transport error")
