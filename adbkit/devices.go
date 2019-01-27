@@ -20,7 +20,7 @@ const (
 )
 
 type Device struct {
-	No          string `json:"no"`
+	Serial      string `json:"serial"`
 	State       string `json:"state"`
 	Product     string `json:"product"`
 	Model       string `json:"model"`
@@ -39,7 +39,7 @@ func (c Client) Devices() ([]Device, error) {
 		for _, line := range strings.Split(string(resp[8:]), "\n") {
 			device := strings.Split(line, "\t")
 			if len(device) > 1 {
-				devices = append(devices, Device{No: device[0], State: device[1]})
+				devices = append(devices, Device{Serial: device[0], State: device[1]})
 			}
 		}
 		return devices, nil
@@ -65,7 +65,7 @@ func (c Client) Lists() ([]Device, error) {
 			for i, item := range line {
 				switch true {
 				case i == 0:
-					device.No = line[0]
+					device.Serial = line[0]
 				case i == 1:
 					device.State = line[1]
 				case strings.Contains(item, "product:"):
@@ -165,7 +165,7 @@ func (c Client) TrackDevices(callback TrackDevice) error {
 		for _, line := range strings.Split(string(buf), "\n") {
 			device := strings.Split(line, "\t")
 			if len(device) > 1 {
-				devices = append(devices, Device{No: device[0], State: device[1]})
+				devices = append(devices, Device{Serial: device[0], State: device[1]})
 			}
 		}
 		callback(devices, nil)
