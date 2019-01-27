@@ -63,9 +63,9 @@ func Init() *gin.Engine {
 	}
 
 	//r.LoadHTMLGlob("templates/*")
-	r.LoadHTMLFiles("templates/shell.html")
+	r.LoadHTMLFiles("templates/index.html")
 	r.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "shell.html", gin.H{
+		c.HTML(http.StatusOK, "index.html", gin.H{
 			"title": "Main website",
 		})
 	})
