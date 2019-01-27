@@ -95,7 +95,7 @@ func WindowSize(c *gin.Context) {
 	if err == nil {
 		c.JSON(http.StatusOK, gin.H{"width": w, "height": h})
 	} else {
-		c.String(http.StatusOK, err.Error())
+		c.JSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 	}
 
 }
