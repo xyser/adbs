@@ -58,3 +58,4 @@ The project is affected by the following projects or articles.
 - [7.0上截图的问题](https://github.com/mzlogin/awesome-adb/issues/33)
 - [Android之高效率截图](https://juejin.im/post/5bab409ef265da0afc2c032e)
 - [Read binary stdout data from adb shell?](https://stackoverflow.com/questions/13578416/read-binary-stdout-data-from-adb-shell)
+- [Go 内嵌静态资源](http://fuxiaohei.me/2016/10/1/go-binary-embed-asset.html)
