@@ -67,7 +67,16 @@ func DisconnectDevice(c *gin.Context) {
 
 func Screencap(c *gin.Context) {
 	serial := c.Query("serial")
-	buffer, err := adbkit.New("127.0.0.1", 5037).Screencap(serial)
+	channel := c.Query("channel")
+
+	var buffer []byte
+	var err error
+	if channel == "shell" {
+		buffer, err = shell.Screencap(serial)
+	} else {
+		buffer, err = adbkit.New("127.0.0.1", 5037).Screencap(serial)
+	}
+
 	if err == nil {
 		c.Writer.Header().Set("Content-Type", "image/png")
 		c.Writer.Header().Set("Content-Length", strconv.Itoa(len(buffer)))

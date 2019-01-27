@@ -7,8 +7,8 @@ import (
 
 // Screencap 用于通过 SHELL 的方式获取截图内容
 // Deprecated: 会逐渐采用 adbkit 代替
-func Screencap() ([]byte, error) {
-	cmd := exec.Command("adb", "exec-out", "screencap -p 2>/dev/null")
+func Screencap(serial string) ([]byte, error) {
+	cmd := exec.Command("adb", "-s", serial, "exec-out", "screencap -p 2>/dev/null")
 
 	//读取io.Writer类型的cmd.Stdout，再通过bytes.Buffer(缓冲byte类型的缓冲器)将byte类型转化为string类型(out.String():这是bytes类型提供的接口)
 	var out bytes.Buffer
