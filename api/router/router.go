@@ -38,6 +38,7 @@ func Init() *gin.Engine {
 		device := api.Group("/device")
 		{
 			// 获取包列表
+			device.GET("/package/clear", handlers.ClearPackage)
 			device.GET("/packages", handlers.GetPackages)
 			// 获取截屏
 			device.GET("/screencap", handlers.Screencap)
