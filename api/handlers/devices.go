@@ -34,17 +34,16 @@ func ConnectDevice(c *gin.Context) {
 	ip := c.PostForm("ip")
 
 	if ip == "" || net.ParseIP(ip) == nil {
-		c.JSON(http.StatusOK, gin.H{"message": "IP Error"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "IP Error"})
 		return
 	}
 
 	bo, err := shell.Connect(ip)
 	if err != nil || !bo {
-		message = fmt.Sprintf("devices connect: %s", err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"message": fmt.Sprintf("devices connect: %s", err.Error())})
+		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"message": message,
-	})
+	c.JSON(http.StatusOK, gin.H{"message": message})
 }
 
 func DisconnectDevice(c *gin.Context) {
