@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 const CLENT_IP = "127.0.0.1"
@@ -35,13 +36,24 @@ func ConnectDevice(c *gin.Context) {
 	var message = "success"
 
 	ip := c.PostForm("ip")
-
-	if ip == "" || net.ParseIP(ip) == nil {
+	if ip == "" {
+		c.JSON(http.StatusOK, gin.H{"message": "IP Empty"})
+		return
+	}
+	ips := strings.Split(ip, ":")
+	if net.ParseIP(ips[0]) == nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "IP Error"})
 		return
 	}
 
-	bo, err := shell.Connect(ip)
+	var port int
+	if len(ips) > 1 {
+		port, _ = strconv.Atoi(ips[1])
+		ip = ips[0]
+	} else {
+		port = 5555
+	}
+	bo, err := adbkit.New(CLENT_IP, CLENT_PORT).Connect(ip, port)
 	if err != nil || !bo {
 		c.JSON(http.StatusBadRequest, gin.H{"message": fmt.Sprintf("devices connect: %s", err.Error())})
 		return
@@ -53,7 +65,12 @@ func DisconnectDevice(c *gin.Context) {
 	var message = "success"
 
 	ip := c.PostForm("ip")
-	if ip == "" || net.ParseIP(ip) == nil {
+	if ip == "" {
+		c.JSON(http.StatusOK, gin.H{"message": "IP Empty"})
+		return
+	}
+	ips := strings.Split(ip, ":")
+	if net.ParseIP(ips[0]) == nil {
 		c.JSON(http.StatusOK, gin.H{"message": "IP Error"})
 		return
 	}
