@@ -11,10 +11,13 @@ import (
 	"strconv"
 )
 
+const CLENT_IP = "127.0.0.1"
+const CLENT_PORT = 5037
+
 // 获取多个项目
 func GetDevices(c *gin.Context) {
 	// 设备列表
-	devices, err := adbkit.New("127.0.0.1", 5037).Lists()
+	devices, err := adbkit.New(CLENT_IP, CLENT_PORT).Lists()
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"message": fmt.Sprintf("devices error: %s", err.Error()),
@@ -73,7 +76,7 @@ func Screencap(c *gin.Context) {
 	if channel == "shell" {
 		buffer, err = shell.Screencap(serial)
 	} else {
-		buffer, err = adbkit.New("127.0.0.1", 5037).Screencap(serial)
+		buffer, err = adbkit.New(CLENT_IP, CLENT_PORT).Screencap(serial)
 	}
 
 	if err == nil {
@@ -90,7 +93,7 @@ func Screencap(c *gin.Context) {
 
 func WindowSize(c *gin.Context) {
 	serial := c.Query("serial")
-	w, h, err := adbkit.New("127.0.0.1", 5037).ScreenSize(serial)
+	w, h, err := adbkit.New(CLENT_IP, CLENT_PORT).ScreenSize(serial)
 	if err == nil {
 		c.JSON(http.StatusOK, gin.H{"width": w, "height": h})
 	} else {

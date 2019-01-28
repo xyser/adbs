@@ -14,7 +14,7 @@ func Push(c *gin.Context) {
 	serial := c.Query("serial")
 	p := c.Query("path")
 
-	adbkit.New("127.0.0.1", 5037).Select(serial).Push(file, p)
+	adbkit.New(CLENT_IP, CLENT_PORT).Select(serial).Push(file, p)
 	c.JSON(http.StatusOK, gin.H{"message": "success"})
 }
 
@@ -23,7 +23,7 @@ func Pull(c *gin.Context) {
 	serial := c.Query("serial")
 	p := c.Query("path")
 
-	content, err := adbkit.New("127.0.0.1", 5037).Select(serial).Pull(p)
+	content, err := adbkit.New(CLENT_IP, CLENT_PORT).Select(serial).Pull(p)
 	if err != nil {
 		c.JSON(http.StatusGatewayTimeout, gin.H{"message": err.Error()})
 		return
@@ -43,7 +43,7 @@ func Dir(c *gin.Context) {
 		}
 	}()
 
-	stats, err := adbkit.New("127.0.0.1", 5037).Select(serial).Dir(p)
+	stats, err := adbkit.New(CLENT_IP, CLENT_PORT).Select(serial).Dir(p)
 	if err != nil {
 		c.JSON(http.StatusGatewayTimeout, gin.H{"message": err.Error()})
 		return
@@ -73,7 +73,7 @@ func Stat(c *gin.Context) {
 		}
 	}()
 
-	stat, err := adbkit.New("127.0.0.1", 5037).Select(serial).Stat(p)
+	stat, err := adbkit.New(CLENT_IP, CLENT_PORT).Select(serial).Stat(p)
 	if err != nil {
 		c.JSON(http.StatusGatewayTimeout, gin.H{"message": err.Error()})
 		return
