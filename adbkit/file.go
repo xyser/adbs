@@ -21,7 +21,7 @@ type Machine struct {
 	Conn   net.Conn
 }
 
-// 选择一个设备
+// Select 选择一个设备
 func (c Client) Select(serial string) Machine {
 	conn, _ := net.Dial("tcp", fmt.Sprintf("%s:%d", c.Host, c.Port))
 
@@ -38,6 +38,7 @@ func (c Client) Select(serial string) Machine {
 	return Machine{Client: c, Serial: serial}
 }
 
+// Sync 预制一个文件操作命令
 func (m Machine) Sync() Machine {
 	// 写入命令
 	command := "sync:"
@@ -52,8 +53,8 @@ func (m Machine) Sync() Machine {
 	return m
 }
 
-// 上传一个文件
-func (m Machine) Push(fh *multipart.FileHeader, remote string) {
+// Push 对某设备上传一个文件
+func (m Machine) Push(fh *multipart.FileHeader, remote string) error {
 	m = m.Sync()
 	go func() {
 		buffer := make([]byte, 1024)
@@ -75,7 +76,7 @@ func (m Machine) Push(fh *multipart.FileHeader, remote string) {
 	// 写入发送命令
 	_, err := m.Conn.Write(buf.Bytes())
 	if err != nil {
-		fmt.Println("write send error: " + err.Error())
+		return errors.New("write send error: " + err.Error())
 	}
 
 	file, _ := fh.Open()
@@ -105,10 +106,10 @@ func (m Machine) Push(fh *multipart.FileHeader, remote string) {
 		// 发送内容
 		_, _ = m.Conn.Write(track[0:n])
 	}
-
+	return nil
 }
 
-// 拉取一个文件
+// Pull 拉取一个文件
 func (m Machine) Pull(remote string) ([]byte, error) {
 	m = m.Sync()
 
@@ -170,7 +171,7 @@ func (m Machine) Pull(remote string) ([]byte, error) {
 	}
 }
 
-// 文件信息结构体
+// Stat 文件信息结构体
 type Stat struct {
 	Name    string
 	Size    int64
@@ -178,7 +179,7 @@ type Stat struct {
 	ModTime time.Time
 }
 
-// 获取路径文件信息
+// Stat 获取路径文件信息
 func (m Machine) Stat(remote string) (Stat, error) {
 	m = m.Sync()
 
@@ -229,7 +230,7 @@ func (m Machine) Stat(remote string) (Stat, error) {
 	}
 }
 
-// 获取路径目录
+// Dir 获取路径目录
 func (m Machine) Dir(path string) ([]Stat, error) {
 	m = m.Sync()
 

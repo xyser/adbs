@@ -13,6 +13,7 @@ type Package struct {
 	ApkPath       string `json:"apk_path"`
 }
 
+// List 获取默认设备得包列表
 func List() (packages []Package, err error) {
 	cmd := exec.Command("adb", "shell", "pm", "list", "packages", "-f")
 

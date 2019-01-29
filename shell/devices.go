@@ -14,7 +14,7 @@ type Device struct {
 	State string `json:"state"`
 }
 
-// 连接一个IP的设备
+// Connect 连接一个IP的设备
 func Connect(ip string) (bool, error) {
 	cmd := exec.Command("adb", "connect", ip)
 
@@ -37,7 +37,7 @@ func Connect(ip string) (bool, error) {
 	return false, errors.New(out.String())
 }
 
-// 解除设备连接
+// Disconnect 解除设备连接
 func Disconnect(ip string) (bool, error) {
 	var cmd *exec.Cmd
 	if ip == "all" {
@@ -67,7 +67,7 @@ func Disconnect(ip string) (bool, error) {
 	return false, errors.New(out.String())
 }
 
-// 获取连接的设备列表
+// Lists 获取连接的设备列表
 // Deprecated: 会逐渐采用 adbkit 代替
 func Lists() (devices []Device, err error) {
 	cmd := exec.Command("adb", "devices")
@@ -97,7 +97,7 @@ func Lists() (devices []Device, err error) {
 	return devices, nil
 }
 
-// 内部字符串转设备类型
+// strToDevice 内部字符串转设备类型
 func strToDevice(s string) (device Device, err error) {
 	if strings.HasPrefix(s, "*") || s == "List of devices attached" {
 		return device, errors.New("not device")

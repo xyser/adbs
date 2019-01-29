@@ -8,6 +8,7 @@ import (
 	"os/exec"
 )
 
+// StartByIntent 启动默认设备包
 func StartByIntent(intent string, data map[string]string) (bool, error) {
 
 	arg := []string{"shell", "am", "start", "-n"}
@@ -43,6 +44,7 @@ func StartByIntent(intent string, data map[string]string) (bool, error) {
 	return false, nil
 }
 
+// StartByAction 通过 Action 启动一个包
 func StartByAction(action string, data map[string]string) (bool, error) {
 
 	arg := []string{"shell", "am", "start", "-a"}

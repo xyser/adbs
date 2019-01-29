@@ -15,7 +15,7 @@ import (
 const CLENT_IP = "127.0.0.1"
 const CLENT_PORT = 5037
 
-// 获取多个项目
+// GetDevices 获取多个项目
 func GetDevices(c *gin.Context) {
 	// 设备列表
 	devices, err := adbkit.New(CLENT_IP, CLENT_PORT).Lists()
@@ -32,6 +32,7 @@ func GetDevices(c *gin.Context) {
 	}
 }
 
+// ConnectDevice 连接设备
 func ConnectDevice(c *gin.Context) {
 	var message = "success"
 
@@ -61,21 +62,14 @@ func ConnectDevice(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": message})
 }
 
+// DisconnectDevice 断开设备
 func DisconnectDevice(c *gin.Context) {
 	var message = "success"
 
-	ip := c.PostForm("ip")
-	if ip == "" {
-		c.JSON(http.StatusOK, gin.H{"message": "IP Empty"})
-		return
-	}
-	ips := strings.Split(ip, ":")
-	if net.ParseIP(ips[0]) == nil {
-		c.JSON(http.StatusOK, gin.H{"message": "IP Error"})
-		return
-	}
+	serial := c.PostForm("serial")
+	// 检查 serial 是否合法
 
-	bo, err := shell.Disconnect(ip)
+	bo, err := shell.Disconnect(serial)
 	if err != nil || !bo {
 		message = fmt.Sprintf("devices connect: %s", err.Error())
 	}
@@ -84,6 +78,7 @@ func DisconnectDevice(c *gin.Context) {
 	})
 }
 
+// Screencap 截屏
 func Screencap(c *gin.Context) {
 	serial := c.Query("serial")
 	channel := c.Query("channel")
@@ -108,6 +103,7 @@ func Screencap(c *gin.Context) {
 
 }
 
+// WindowSize 获取设备屏幕大小
 func WindowSize(c *gin.Context) {
 	serial := c.Query("serial")
 	w, h, err := adbkit.New(CLENT_IP, CLENT_PORT).ScreenSize(serial)

@@ -29,6 +29,7 @@ type windowSize struct {
 	Y    uint16
 }
 
+// Shell 用于处理长连接 shell
 func Shell(conn *websocket.Conn, serial string) {
 	//函数返回一个*Cmd，用于使用给出的参数执行name指定的程序
 	cmd := exec.Command("adb", "-s", serial, "shell")
@@ -121,6 +122,7 @@ func Shell(conn *websocket.Conn, serial string) {
 	}
 }
 
+// checkAdb 获取 ADB 执行文件路径
 func checkAdb() (bool, error) {
 	cmd := exec.Command("which", "adb")
 
