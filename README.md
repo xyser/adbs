@@ -2,6 +2,8 @@
 
 Android Debug Bridge (adb) Remote debugging service.
 
+Read this in other languages: [English](README.md), [简体中文](README.zh-CN.md).
+
 ## Feature List 
 
 * ADB Server
