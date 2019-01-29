@@ -51,7 +51,8 @@ go get github.com/dingdayu/adbs
 - [X] 推文件写入协议优化
 - [ ] 获取文件信息时的文件类型问题（目录/连接）
 - [ ] 设备列表等API接口完成设备选择
-
+- [ ] 提供编译版本
+- [ ] 提供 `docker` 镜像
 
 ## Reference
 
