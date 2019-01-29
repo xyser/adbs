@@ -114,8 +114,8 @@ func (c Client) Connect(ip string, port int) (bool, error) {
 }
 
 // 断开设备
-func (c Client) Disconnect(ip string, port int) (bool, error) {
-	resp, err := c.Command(fmt.Sprintf("host:disconnect:#%s:#%d", ip, port))
+func (c Client) Disconnect(serial string) (bool, error) {
+	resp, err := c.Command(fmt.Sprintf("host:disconnect:#%s", serial))
 	if err != nil {
 		return false, err
 	}
