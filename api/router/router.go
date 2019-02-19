@@ -55,7 +55,7 @@ func Init() *gin.Engine {
 			// 获取屏幕尺寸
 			device.GET("/window/size", handlers.WindowSize)
 			// 安卓 APK
-			device.GET("/install", handlers.Install)
+			device.POST("/install", handlers.Install)
 
 			// 处理websocket
 			device.GET("/shell/ws", func(c *gin.Context) {
