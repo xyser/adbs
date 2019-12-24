@@ -1,9 +1,11 @@
 package handlers
 
 import (
-	"adbs/shell"
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"adbs/shell"
+
+	"github.com/gin-gonic/gin"
 )
 
 func Input(c *gin.Context) {

@@ -1,11 +1,13 @@
 package router
 
 import (
-	"adbs/api/handlers"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
+
+	"adbs/api/handlers"
+
+	"github.com/gin-gonic/gin"
 )
 
 func Init() *gin.Engine {

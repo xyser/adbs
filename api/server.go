@@ -1,7 +1,6 @@
 package api
 
 import (
-	"adbs/api/router"
 	"context"
 	"fmt"
 	"log"
@@ -9,6 +8,8 @@ import (
 	"os"
 	"os/signal"
 	"time"
+
+	"adbs/api/router"
 )
 
 func Init() {

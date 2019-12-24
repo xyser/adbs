@@ -1,11 +1,13 @@
 package handlers
 
 import (
-	"adbs/adbkit"
-	"github.com/gin-gonic/gin"
 	"mime"
 	"net/http"
 	"path"
+
+	"adbs/adbkit"
+
+	"github.com/gin-gonic/gin"
 )
 
 // 上传文件到 设备

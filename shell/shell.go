@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gorilla/websocket"
-	"github.com/kr/pty"
 	"io"
 	"log"
 	"os"
@@ -14,6 +12,9 @@ import (
 	_ "os/signal"
 	"syscall"
 	"unsafe"
+
+	"github.com/gorilla/websocket"
+	"github.com/kr/pty"
 )
 
 func init() {
