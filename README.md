@@ -42,7 +42,13 @@ Please ensure the correct execution of `adb devices`.
 ### Download
 
 ```shell
-go get github.com/dingdayu/adbs
+git clone https://github.com/dingdayu/adbs
+
+cd adbs
+
+go mod tidy
+
+go run .
 ```
 
 ## TODO

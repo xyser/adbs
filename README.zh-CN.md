@@ -46,6 +46,8 @@ git clone https://github.com/dingdayu/adbs
 
 cd adbs
 
+go mod tidy
+
 go run .
 ```
 
