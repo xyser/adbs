@@ -13,6 +13,7 @@ type Ver struct {
 	CommandPath string
 }
 
+// Version 通过 shell 获取版本
 func Version() (version Ver, err error) {
 	//函数返回一个*Cmd，用于使用给出的参数执行name指定的程序
 	cmd := exec.Command("adb", "version")

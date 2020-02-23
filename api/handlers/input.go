@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Input 向设备发送事件
 func Input(c *gin.Context) {
 	// serial := c.Query("serial")
 	command := c.PostForm("command")

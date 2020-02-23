@@ -10,7 +10,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// 上传文件到 设备
+const TEMP_PATH = "/data/local/tmp"
+
+// Push 上传文件到 设备
 func Push(c *gin.Context) {
 	file, _ := c.FormFile("file")
 	serial := c.Query("serial")
@@ -20,7 +22,7 @@ func Push(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "success"})
 }
 
-// 从设备路径下载文件
+// Pull 从设备路径下载文件
 func Pull(c *gin.Context) {
 	serial := c.Query("serial")
 	p := c.Query("path")
@@ -34,6 +36,25 @@ func Pull(c *gin.Context) {
 	c.Data(200, mime.TypeByExtension(path.Ext(p)), content)
 }
 
+func Install(c *gin.Context) {
+	file, _ := c.FormFile("file")
+	serial := c.Query("serial")
+	p := TEMP_PATH + "/_install.apk"
+	err := adbkit.New(CLENT_IP, CLENT_PORT).Select(serial).Push(file, p)
+	if err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"message": "upload file error"})
+		return
+	}
+	_, err = adbkit.New(CLENT_IP, CLENT_PORT).Install(serial, p)
+	if err != nil {
+		c.JSON(http.StatusNotImplemented, gin.H{"message": "apk install error"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "success"})
+}
+
+// Dir 获取某设备路径下得文件（夹）列表
 func Dir(c *gin.Context) {
 	serial := c.Query("serial")
 	p := c.Query("path")
@@ -64,6 +85,7 @@ func Dir(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+// Stat 获取某设备某路径文件详情
 func Stat(c *gin.Context) {
 	serial := c.Query("serial")
 	p := c.Query("path")

@@ -42,7 +42,7 @@ func (c Client) Callback(command string, callback Callback) error {
 	return <-stop
 }
 
-// 连接一个设备
+// Transport 连接一个设备
 func (c Client) Transport(serial string) (conn net.Conn, err error) {
 	conn, err = net.Dial("tcp", fmt.Sprintf("%s:%d", c.Host, c.Port))
 	if err != err || conn == nil {

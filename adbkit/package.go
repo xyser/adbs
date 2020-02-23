@@ -13,7 +13,7 @@ type Package struct {
 	ApkPath       string `json:"apk_path"`
 }
 
-// 清理包缓存
+// PackageClear 清理包缓存
 // fmt.Println(adbkit.New("127.0.0.1", 5037).Reboot("emulator-5554"))
 func (c Client) PackageClear(serial, pkg string) error {
 	conn, err := c.Transport(serial)
@@ -45,7 +45,7 @@ func (c Client) PackageClear(serial, pkg string) error {
 	return errors.New("adb response: " + string(resp))
 }
 
-// 获取包名
+// List 获取包名
 // fmt.Println(adbkit.New("127.0.0.1", 5037).List("emulator-5554"))
 func (c Client) List(serial string) (packages []Package, err error) {
 	conn, err := c.Transport(serial)
@@ -82,6 +82,7 @@ func (c Client) List(serial string) (packages []Package, err error) {
 	return nil, errors.New("adb response: " + string(resp))
 }
 
+// Features 获取设备 Features
 func (c Client) Features(serial string) (features []string, err error) {
 	conn, err := c.Transport(serial)
 	if err != nil {
@@ -118,7 +119,7 @@ func (c Client) Features(serial string) (features []string, err error) {
 	return nil, errors.New("adb response: " + string(resp))
 }
 
-// 获取包的路径
+// GetPath 获取包的路径
 // path,err := adbkit.New("127.0.0.1", 5037).GetPath("emulator-5554", "com.android.smoketest")
 func (c Client) GetPath(serial, pkg string) (path string, err error) {
 	conn, err := c.Transport(serial)
@@ -153,7 +154,7 @@ func (c Client) GetPath(serial, pkg string) (path string, err error) {
 	return "", errors.New("adb response: " + string(resp))
 }
 
-// 安装远端应用
+// Install 安装本地应用，远端安装需先上传
 func (c Client) Install(serial, path string) (bool, error) {
 	conn, err := c.Transport(serial)
 	if err != nil {
@@ -189,6 +190,7 @@ func (c Client) Install(serial, path string) (bool, error) {
 	return false, errors.New("adb response: " + string(resp))
 }
 
+// UnInstall 根据包名卸载一个应用
 func (c Client) UnInstall(serial, pkg string) (bool, error) {
 	conn, err := c.Transport(serial)
 	if err != nil {
@@ -226,7 +228,7 @@ func (c Client) UnInstall(serial, pkg string) (bool, error) {
 	return false, errors.New("adb response: " + string(resp))
 }
 
-// 打开 Activity or Service
+// PackageManager Package 管理
 func (c Client) PackageManager(serial, command string, args []string) (bool, error) {
 	conn, err := c.Transport(serial)
 	if err != nil {

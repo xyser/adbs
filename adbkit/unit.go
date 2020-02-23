@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// 对命令进行编码
+// EncodeCommend 对命令进行编码
 func EncodeCommend(command string) []byte {
 	prefix := strings.ToUpper("0000" + fmt.Sprintf("%X", len(command)))
 	length := len(prefix)
@@ -14,7 +14,7 @@ func EncodeCommend(command string) []byte {
 	return []byte(prefix + command)
 }
 
-// 32位整形 转 []byte
+// Uint32ToBytes 32位整形 转 []byte
 func Uint32ToBytes(n uint32) []byte {
 	return []byte{
 		byte(n),

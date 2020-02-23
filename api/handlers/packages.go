@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// 获取多个项目
+// GetPackages 获取多个项目
 // TODO:: 尚未支持切换设备
 func GetPackages(c *gin.Context) {
 	// 设备列表

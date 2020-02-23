@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// 删除与软件包关联的所有数据
+// Clear 删除与软件包关联的所有数据
 func Clear(pack string) (bool, error) {
 	//函数返回一个*Cmd，用于使用给出的参数执行name指定的程序
 	cmd := exec.Command("adb", "shell", "pm", "clear", pack)

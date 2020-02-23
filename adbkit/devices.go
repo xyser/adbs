@@ -28,7 +28,7 @@ type Device struct {
 	TransportId int    `json:"transport_id"`
 }
 
-// 获取设备列表
+// Devices 获取一个节点设备列表
 func (c Client) Devices() ([]Device, error) {
 	resp, err := c.Command("host:devices")
 	if err != nil {
@@ -49,6 +49,7 @@ func (c Client) Devices() ([]Device, error) {
 	return nil, errors.New("error response: " + string(resp))
 }
 
+// Devices 获取一个详细节点设备列表
 func (c Client) Lists() ([]Device, error) {
 	resp, err := c.Command("host:devices-l")
 	if err != nil {
@@ -91,7 +92,7 @@ func (c Client) Lists() ([]Device, error) {
 	return nil, errors.New("error response: " + string(resp))
 }
 
-// 连接一个设备
+// Connect 从一个节点连接一个设备
 func (c Client) Connect(ip string, port int) (bool, error) {
 	resp, err := c.Command(fmt.Sprintf("host:connect:#%s:#%d", ip, port))
 	if err != nil {
@@ -113,9 +114,9 @@ func (c Client) Connect(ip string, port int) (bool, error) {
 	return false, errors.New("error response: " + string(resp))
 }
 
-// 断开设备
-func (c Client) Disconnect(ip string, port int) (bool, error) {
-	resp, err := c.Command(fmt.Sprintf("host:disconnect:#%s:#%d", ip, port))
+// Disconnect 断开设备
+func (c Client) Disconnect(serial string) (bool, error) {
+	resp, err := c.Command(fmt.Sprintf("host:disconnect:#%s", serial))
 	if err != nil {
 		return false, err
 	}
@@ -132,7 +133,7 @@ func (c Client) Disconnect(ip string, port int) (bool, error) {
 	return false, errors.New("error response: " + string(resp))
 }
 
-// 获取设备列表
+// Kill 断开一个节点得所有设备
 func (c Client) Kill() (bool, error) {
 	resp, err := c.Command("host:kill")
 	if err != nil {
@@ -148,7 +149,7 @@ func (c Client) Kill() (bool, error) {
 
 type TrackDevice func(devices []Device, err error)
 
-// 回调 设备连接变化
+// TrackDevices  回调 设备连接变化
 //  err := adbkit.New("127.0.0.1", 5037).TrackDevices(func(devices []adbkit.Device, err error) {
 //		fmt.Println(err)
 //		fmt.Println(devices)

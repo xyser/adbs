@@ -50,11 +50,14 @@ func Init() *gin.Engine {
 			device.GET("/pull", handlers.Pull)
 			// 获取目录
 			device.GET("/dir", handlers.Dir)
+			// 获取文件详情
 			device.GET("/stat", handlers.Stat)
 			// 模拟输入
 			device.POST("/input", handlers.Input)
 			// 获取屏幕尺寸
 			device.GET("/window/size", handlers.WindowSize)
+			// 安卓 APK
+			device.POST("/install", handlers.Install)
 
 			// 处理websocket
 			device.GET("/shell/ws", func(c *gin.Context) {

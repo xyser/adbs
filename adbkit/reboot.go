@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 )
 
-// 重启设备
+// Reboot 重启设备
 // fmt.Println(adbkit.New("127.0.0.1", 5037).Reboot("emulator-5554"))
 func (c Client) Reboot(serial string) error {
 	conn, err := c.Transport(serial)
@@ -35,7 +35,7 @@ func (c Client) Reboot(serial string) error {
 	return errors.New("adb response: " + string(resp))
 }
 
-// 重新挂载磁盘
+// Remount 重新挂载磁盘
 func (c Client) Remount(serial string) error {
 	conn, err := c.Transport(serial)
 	if err != nil {

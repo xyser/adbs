@@ -168,6 +168,7 @@ Total RAM: 1,550,680K (status normal)
    Tuning: 384 (large 384), oom   184,320K, restore limit    61,440K (high-end-gfx)
 */
 
+// List 获取一个内存详情
 func List() (str string, err error) {
 	cmd := exec.Command("adb", "shell", "dumpsys", "meminfo")
 

@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-// 打开 Activity or Service
+// ActivityManager Activity 管理
 func (c Client) ActivityManager(serial, command string, args []string) (bool, error) {
 	conn, err := c.Transport(serial)
 	if err != nil {

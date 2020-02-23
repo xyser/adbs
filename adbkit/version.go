@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-// 获取 ADB 版本
+// Version 获取 ADB 版本
 func (c Client) Version() (int, error) {
 	resp, err := c.Command("host:version")
 	if err != nil {
