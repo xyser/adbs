@@ -13,8 +13,8 @@ import (
 	"syscall"
 	"unsafe"
 
+	"github.com/creack/pty"
 	"github.com/gorilla/websocket"
-	"github.com/kr/pty"
 )
 
 func init() {
